@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.4
+Script_Version := 1.5
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -40,7 +40,6 @@ If !FileExist("Settings.ini")
 {
 	IniWrite, Имя, Settings.ini, user, name
 	IniWrite, 0, Settings.ini, user, setontop
-	IniWrite, 0, Settings.ini, user, enable_sorting
 	IniWrite, w400 h200, Settings.ini, window position, gui_position
 
 	IniWrite, 0, Settings.ini, Ozon, O_Galochka
@@ -59,7 +58,6 @@ If !FileExist("Settings.ini")
 IniRead, username, Settings.ini, user, name, Имя
 IniRead, username, Settings.ini, user, name
 IniRead, setontop, Settings.ini, user, setontop
-IniRead, enable_sorting, Settings.ini, user, enable_sorting
 IniRead, gui_position, Settings.ini, window position, gui_position, w400 h200
 
 IniRead, O_Galochka, Settings.ini, Ozon, O_Galochka
@@ -104,7 +102,6 @@ LoadMainGUI()
 	Gui, Add, Text, xs, Имя:
 	Gui, Add, Edit, w100 x+5 vUSERNAME, % username
 	Gui, Add, CheckBox, xs vSetontop Checked%setontop%, Отображать поверх других окон
-	Gui, Add, CheckBox, xs vEnable_sorting Checked%enable_sorting%, Сортировать заказы
 	Gui, Add, Button, xs default, Сохранить  ; СОХРАНИТЬ НАСТРОЙКИ
 	Gui, Add, Button, x+5, Выйти  ; СОХРАНИТЬ НАСТРОЙКИ
 	SpawnGUI()
@@ -124,7 +121,6 @@ ButtonСохранить:
 Gui, Submit, NoHide 
 IniWrite, %username%, Settings.ini, user, name
 IniWrite, %setontop%, Settings.ini, user, setontop
-IniWrite, %enable_sorting%, Settings.ini, user, enable_sorting
 If SETONTOP
 	WinSet, AlwaysOnTop, On, %A_ScriptName%
 If !SETONTOP
@@ -696,14 +692,9 @@ If WinActive("ahk_exe chrome.exe") or WinActive("ahk_exe browser.exe")
 		CopyWB()
 		Sorting(2)
 	}
-	Sorting2()
 }
 return
 
-Sorting2()
-{
-	
-}
 
 Sorting(WhereIsName)
 {
