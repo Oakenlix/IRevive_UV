@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.2
+Script_Version := 1.3
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -369,30 +369,52 @@ If LV_GetText(OrderArticle, Current_Line, 3)
 		}
 return
 
-#IfWinActive ahk_class #32770 ; ЕСЛИ ОТКРЫТО ОКНО ВЫБОРА МАКЕТОВ
-
 ^2::
-If MAKET_NAME3
+If WinActive(ahk_class #32770)
 {
-	SendInput {down}{enter}
+	If MAKET_NAME3 ; ЕСЛИ ОТКРЫТО ОКНО ВЫБОРА МАКЕТОВ
+	{
+		SendInput {down}{enter}
+		LV_modify(Current_Line, "Col4", MAKET_NAME3)
+		LV_Modify(Current_Line, "Check")
+	}
+	If !MAKET_NAME3
+	{
+	SendInput {down}^{vk41}^{vk43}{enter} ; CTRL+A - CTRL+C
+	sleep 300
+	MAKET_NAME3 := Clipboard
 	LV_modify(Current_Line, "Col4", MAKET_NAME3)
+	LV_GetText(OrderName, Current_Line, 2)
+	LV_GetText(OrderArticle, Current_Line, 3)
+	;FileAppend, `n%OrderArticle%%A_Tab%%MAKET_NAME2%%A_Tab%%A_Tab%%A_Tab%%OrderName%, База WB.txt
+	FileAppend, % "`n" A_Hour ":" A_Min ":" A_Sec A_Space A_DD "." A_MM "." A_YYYY A_Tab OrderArticle A_Tab MAKET_NAME3 A_Tab A_Tab A_Tab OrderName, База WB.txt
 	LV_Modify(Current_Line, "Check")
-}
-If !MAKET_NAME3
-{
-SendInput {down}^{vk41}^{vk43}{enter} ; CTRL+A - CTRL+C
-sleep 300
-MAKET_NAME3 := Clipboard
-LV_modify(Current_Line, "Col4", MAKET_NAME3)
-LV_GetText(OrderName, Current_Line, 2)
-LV_GetText(OrderArticle, Current_Line, 3)
-;FileAppend, `n%OrderArticle%%A_Tab%%MAKET_NAME2%%A_Tab%%A_Tab%%A_Tab%%OrderName%, База WB.txt
-FileAppend, % "`n" A_Hour ":" A_Min ":" A_Sec A_Space A_DD "." A_MM "." A_YYYY A_Tab OrderArticle A_Tab MAKET_NAME3 A_Tab A_Tab A_Tab OrderName, База WB.txt
-LV_Modify(Current_Line, "Check")
+	}
 }
 return
 
 
+^3::
+Loop 8
+{
+	NextOrder()
+	If LV_GetText(OrderName, Current_Line, 2)
+	{
+		If InStr(OrderName, "печатью")
+			Pos := InStr(OrderName, "печатью")+8
+		If InStr(OrderName, "в подарок")
+			Pos := InStr(OrderName, "в подарок")+10
+		If Pos
+		{
+			OrderName := SubStr(OrderName, Pos)
+			SendInput {insert}
+			sleep 500
+			SendInput %OrderName%{enter}
+			sleep 2000
+		}
+	}
+}
+return
 
 
 /* ; ###################### Заморожено
