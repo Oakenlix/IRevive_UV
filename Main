@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.1
+Script_Version := 1.2
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -201,8 +201,6 @@ if (A_GuiEvent = "DoubleClick")
 	}
 	APIGET(OrderNumber) ; Креатив
 }
-
-
 if (A_GuiEvent = "RightClick") ; Клик правой ;
 {
 	LV_GetText(RowText, A_EventInfo, 2)  
@@ -216,6 +214,9 @@ if (A_GuiEvent = "RightClick") ; Клик правой ;
 }
 return
 
+Убратьгалочки:
+LV_Modify(0, "-Check")
+return
 
 ButtonПереместить:
 InputBox, supplyId, A_ScriptName, Введите ID поставки, , 250, 130
@@ -298,8 +299,9 @@ If (MARKETPLACE != "OZON") and MPTEST[4] and RegexMatch(MPTEST[1], "\d+-\d{4}-\d
 	Gui, Destroy
 	MARKETPLACE := "OZON"
 	Gui, Add, Text,, OZON Магазин:
-	Gui, Add, DropDownList, w80 x+2 vWBIP gWBIP, УЕПЛенка|ЗащитаV10|Остальные
-	Gui, Add, Button, x+5 vMainpage, Настройки
+	Gui, Add, DropDownList, w80 x+3 vWBIP gWBIP, УЕПЛенка|ЗащитаV10|Остальные
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMainpage, Настройки
 	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Артикул|Количество|Название
 	IniRead, gui_position, Settings.ini, window position, gui_position, "x300 y200 w250 h250"
 	SpawnGUI()
@@ -309,8 +311,9 @@ If (MARKETPLACE != "YANDEX") and MPTEST[4] and RegexMatch(MPTEST[1], "[0-9]{9}")
 	Gui, Destroy
 	MARKETPLACE := "YANDEX"
 	Gui, Add, Text,, YANDEX Магазин:
-	Gui, Add, DropDownList, w80 x+2 vWBIP gWBIP, Броня|Премиум|УЕАксы|УЕПленка
-	Gui, Add, Button, x+5 vMainpage, Настройки
+	Gui, Add, DropDownList, w80 x+3 vWBIP gWBIP, Броня|Премиум|УЕАксы|УЕПленка
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMainpage, Настройки
 	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Количество
 	SpawnGUI()
 }
@@ -319,9 +322,10 @@ If !MPTEST[4] and (MARKETPLACE != "WB") 										; Если ВБ
 	Gui, Destroy
 	MARKETPLACE := "WB"	
 	Gui, Add, Text,, WB ИП:
-	Gui, Add, DropDownList, w50 x+2 vWBIP gWBIP, 1|2|3|4
-	Gui, Add, Button, x+5 vMoveOrders, Переместить
-	Gui, Add, Button, x+5 vMainpage, Настройки
+	Gui, Add, DropDownList, w50 x+3 vWBIP gWBIP, 1|2|3|4
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMoveOrders, Переместить
+	Gui, Add, Button, x+3 vMainpage, Настройки
 	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Макет
 	SpawnGUI()
 }
@@ -341,107 +345,45 @@ return
 
 
 ^1::
-NextOrder()
-MAKET_NAME3 :=
-SendInput {insert}
+If !APIKEY
+{
+	MsgBox, Не выбран магазин
+	return
+}
+loop 10 
+{
+	WinGetActiveTitle, Title
+	If InStr(Title, "в интернет-магазине Wildberries") or InStr(Title, "temp.bmp (580")
+	{
+		SendInput ^{vk57} ; CTRL+W Закрыть вкладку
+	}
+	else break
+	sleep 100
+}
 
-If LV_GetText(OrderArticle, Current_Line, 3)
-	Loop, read, База WB.txt
-		If Instr(A_LoopReadLine, OrderArticle)
-		{
-			StringSplit, MAKET_NAME, A_LoopReadLine, %A_Tab%
-			LV_GetText(OrderArticle, Current_Line, 3)
-			If (OrderArticle == MAKET_NAME2)
-			{
-				sleep 600
-				SendInput ^{vk56}%MAKET_NAME3%
-				LV_modify(Current_Line, "Col4", MAKET_NAME3)
-				LV_Modify(Current_Line, "Check")
-				break
-			}
-			else
-				loop 5
-					MAKET_NAME%A_Index% :=
-		}
+NextOrder()
+LV_GetText(OrderNumber, Current_Line, 1)
+APIPOST(OrderNumber, False) ; Этикетка	
+Loop 20 ; Цикл проверки загрузки ярлыка
+{
+WinGetActiveTitle, Title
+If InStr(Title, "temp.bmp (580")
+	{
+	sleep 500
+	SendInput ^{vk50} ; ctrl+P
+	sleep 2000
+	SendInput {enter}
+	sleep 500
+	break
+	}
+sleep 250
+}
+APIGET(OrderNumber) ; Креатив
 return
 
 ^2::
-If WinActive(ahk_class #32770)
-{
-	If MAKET_NAME3 ; ЕСЛИ ОТКРЫТО ОКНО ВЫБОРА МАКЕТОВ
-	{
-		SendInput {down}{enter}
-		LV_modify(Current_Line, "Col4", MAKET_NAME3)
-		LV_Modify(Current_Line, "Check")
-	}
-	If !MAKET_NAME3
-	{
-	SendInput {down}^{vk41}^{vk43}{enter} ; CTRL+A - CTRL+C
-	sleep 300
-	MAKET_NAME3 := Clipboard
-	LV_modify(Current_Line, "Col4", MAKET_NAME3)
-	LV_GetText(OrderName, Current_Line, 2)
-	LV_GetText(OrderArticle, Current_Line, 3)
-	;FileAppend, `n%OrderArticle%%A_Tab%%MAKET_NAME2%%A_Tab%%A_Tab%%A_Tab%%OrderName%, База WB.txt
-	FileAppend, % "`n" A_Hour ":" A_Min ":" A_Sec A_Space A_DD "." A_MM "." A_YYYY A_Tab OrderArticle A_Tab MAKET_NAME3 A_Tab A_Tab A_Tab OrderName, База WB.txt
-	LV_Modify(Current_Line, "Check")
-	}
-}
+
 return
-
-
-^3::
-Loop 8
-{
-	NextOrder()
-	If LV_GetText(OrderName, Current_Line, 2)
-	{
-		If InStr(OrderName, "печатью")
-			Pos := InStr(OrderName, "печатью")+8
-		If InStr(OrderName, "в подарок")
-			Pos := InStr(OrderName, "в подарок")+10
-		If Pos
-		{
-			OrderName := SubStr(OrderName, Pos)
-			SendInput {insert}
-			sleep 500
-			SendInput ^{vk46}
-			sleep 200
-			SendInput %OrderName%
-			KeyWait, Enter, D
-			KeyWait, Enter
-			sleep 2000
-		}
-	}
-}
-return
-
-
-/* ; ###################### Заморожено
-!1::
-sleep 100
-Result1 :=
-
-If (MARKETPLACE == "OZON")
-	Ozon1()
-
-If (MARKETPLACE == "WB")
-	WB1()
-
-If (MARKETPLACE == "YANDEX")
-	YANDEX1()
-SendInput {Alt up}
-return
-
-!2::
-sleep 100
-If (MARKETPLACE == "WB")
-	return
-If (MARKETPLACE == "OZON")
-	Ozon2()
-SendInput {Alt up}
-return
-*/
 
 
 } ; HOTKEYS END
@@ -451,6 +393,7 @@ return
 
 !1::
 InputBox, Brelok_Amount, Жетоны, Количество макетов:, , 250, 130
+Insert()
 Placement1("Координаты жетонов")
 return
 
@@ -492,49 +435,74 @@ InputBox, Brelok_Amount, Флешки, Количество макетов:, , 2
 Placement2("Координаты флешек")
 return
 
-
+Insert()
+{
+	global
+	Loop % Brelok_Amount
+	{
+		NextOrder()
+		If LV_GetText(OrderName, Current_Line, 2)
+		{
+			If InStr(OrderName, "печатью")
+				Pos := InStr(OrderName, "печатью")+8
+			If InStr(OrderName, "в подарок")
+				Pos := InStr(OrderName, "в подарок")+10
+			If Pos
+			{
+				OrderName := SubStr(OrderName, Pos)
+				SendInput {insert}
+				sleep 500
+				SendInput ^{vk46}
+				sleep 500
+				SendInput %OrderName%
+				KeyWait, Enter, D
+				KeyWait, Enter
+				sleep 2000
+			}
+		}
+	}
+}
 
 Placement1(FileName)
 {
-global
-sleep 200
+	global
+	sleep 200
 
-loop %Brelok_Amount%
-{
-if GetKeyState("Esc")
-	break
+	loop % Brelok_Amount
+	{
+		if GetKeyState("Esc")
+			break
 
-FileReadLine, The_Line, %FileName%.txt, A_Index
-StringSplit, Coords, The_Line, %A_Space%
+		FileReadLine, The_Line, %FileName%.txt, A_Index
+		StringSplit, Coords, The_Line, %A_Space%
 
-Click, %ZeroX% %ZeroY% 0		; Клик в начало координат
-DoubleClick()
-sleep 300
+		Click, %ZeroX% %ZeroY% 0		; Клик в начало координат
+		DoubleClick()
+		sleep 300
 
-Click, %VisotaX% %VisotaY% 0 ; Высота
-DoubleClick()
-sleep %sleep1%
-SendInput %size1%{enter}
-sleep %sleep1%
-Sendinput {up}
-sleep %sleep1%
-SendInput %size2%{enter}
-sleep %sleep1%
-Sendinput {up}{up}
-sleep %sleep1%
-SendInput %Coords2%{enter}
-sleep %sleep1%
-Sendinput {up}
-sleep %sleep1%
-SendInput %Coords1%{enter}
-}
+		Click, %VisotaX% %VisotaY% 0 ; Высота
+		DoubleClick()
+		sleep %sleep1%
+		SendInput %size1%{enter}
+		sleep %sleep1%
+		Sendinput {up}
+		sleep %sleep1%
+		SendInput %size2%{enter}
+		sleep %sleep1%
+		Sendinput {up}{up}
+		sleep %sleep1%
+		SendInput %Coords2%{enter}
+		sleep %sleep1%
+		Sendinput {up}
+		sleep %sleep1%
+		SendInput %Coords1%{enter}
+	}
 }
 
 Placement2(FileName)
 {
 global
 sleep 200
-
 
 loop %Brelok_Amount%
 {
@@ -661,6 +629,7 @@ sleep %sleep1%
 SendInput %Coords1%{enter}
 }
 
+#IfWinActive
 
 { ; ######################################################################### КОПИРОВАНИЕ В ТАБЛИЦУ
 #IfWinActive
