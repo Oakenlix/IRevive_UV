@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.5
+Script_Version := 1.1
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -926,16 +926,16 @@ NextOrder() ; ##### Переход к следующему неотмеченн�
 		else If !LV_GetNext(RowNumber, "C") ; The above returned zero, so there are no more selected rows.
 		{
 			Current_Line := A_Index
-			LV_Modify(Current_Line, "Select")
-			LV_Modify(Current_Line, "Check")
-			LV_Modify(Current_Line+2, "Vis")
-			LV_Modify(Current_Line, "Vis")
 			break
 		}
 	}
-	If !Current_Line
+	LV_Modify(Current_Line, "Select")
+	LV_Modify(Current_Line, "Check")
+	LV_Modify(Current_Line+2, "Vis")
+	LV_Modify(Current_Line, "Vis")
+	
+	If (Current_Line > LV_GetCount())
 	{
-		SendInput {esc}
 		MsgBox, 262144,, Конец списка
 		return
 	}
