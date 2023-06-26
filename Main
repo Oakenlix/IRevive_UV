@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.3
+Script_Version := 1.4
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -409,7 +409,11 @@ Loop 8
 			OrderName := SubStr(OrderName, Pos)
 			SendInput {insert}
 			sleep 500
-			SendInput %OrderName%{enter}
+			SendInput ^{vk46}
+			sleep 200
+			SendInput %OrderName%
+			KeyWait, Enter, D
+			KeyWait, Enter
 			sleep 2000
 		}
 	}
