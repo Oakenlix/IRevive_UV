@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.3
+Script_Version := 1.4
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
@@ -629,251 +629,7 @@ sleep %sleep1%
 SendInput %Coords1%{enter}
 }
 
-#IfWinActive
-
-{ ; ######################################################################### КОПИРОВАНИЕ В ТАБЛИЦУ
-#IfWinActive
-
-OnClipboardChange:
-If WinActive("ahk_exe chrome.exe") or WinActive("ahk_exe browser.exe")
-{
-	If RegexMatch(Clipboard, "\d+-\d{4}-\d", Result) and InStr(Clipboard, "шт.")
-	{
-		global MARKETPLACE_COPY:= "OZON"
-		CopyOzon()
-		Sorting(4)
-	}
-	If RegexMatch(Clipboard, "\d{9} / \d{9}", Result)
-	{
-		global MARKETPLACE_COPY := "YANDEX"
-		CopyYandex()
-		Sorting(2)
-	}
-	If InStr(Clipboard, "Ожидает отправки") and InStr(Clipboard, "ID:")
-	{
-		global MARKETPLACE_COPY := "ALI"
-		CopyALI()
-		Sorting(2)
-	}
-	If InStr(Clipboard, "2023") and InStr(Clipboard, "Арт.:")
-	{
-		global MARKETPLACE_COPY := "WB"
-		CopyWB()
-		Sorting(2)
-	}
-}
-return
-
-
-Sorting(WhereIsName)
-{
-Loop, parse, clipboard, `n, `r
-	If A_LoopField
-	{
-		StringSplit, OrderPart, A_LoopField, %A_Tab%
-		TheOrderName := OrderPart%WhereIsName%
-		If (MARKETPLACE_COPY == "WB") ; Убираем название бренда
-			{
-			Pos := InStr(TheOrderName, "/")+1
-			TheOrderName := SubStr(TheOrderName, Pos)
-			}
-		
-		If InStr(TheOrderName, " час") ;============== Ищем часы
-			and !InStr(TheOrderName, "Band")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "стекло")
-			and !InStr(TheOrderName, "чехол")
-			and !InStr(TheOrderName, "не пленка")
-		or InStr(TheOrderName, "-час")
-			and !InStr(TheOrderName, "Band")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "стекло")
-			and !InStr(TheOrderName, "чехол")
-			and !InStr(TheOrderName, "не пленка")
-		or InStr(TheOrderName, "watch")
-			and !InStr(TheOrderName, "Band")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "зарядк")
-			and !InStr(TheOrderName, "стекло")
-			and !InStr(TheOrderName, "чехол")
-			and !InStr(TheOrderName, "не пленка")
-		or InStr(TheOrderName, "watch")
-			and InStr(TheOrderName, "не стекло")
-		or InStr(TheOrderName, "Elari")
-		or InStr(TheOrderName, "Polar")
-		or InStr(TheOrderName, "Amazfit")
-		or InStr(TheOrderName, "Huawei band")
-		or InStr(TheOrderName, "Honor magic")
-		or InStr(TheOrderName, "Jet sport")
-		or InStr(TheOrderName, "Jet kid")
-		or InStr(TheOrderName, "Garmin fore")
-		or InStr(TheOrderName, "Garmin viv")
-		or InStr(TheOrderName, "Garmin tact")
-		or InStr(TheOrderName, "Aimoto")
-		or InStr(TheOrderName, "Honor band")
-		or InStr(TheOrderName, "GARMIN Instinct")
-		or InStr(TheOrderName, "Smarus")
-		or InStr(TheOrderName, "Frontier") 
-		or InStr(TheOrderName, "ALFAJR")
-		or InStr(TheOrderName, "Geozon Energy")
-		or InStr(TheOrderName, "Garmin venu")
-		or InStr(TheOrderName, "Suunto spartan")
-		or InStr(TheOrderName, "Fitbit")
-		or InStr(TheOrderName, "Suunto")
-		{
-			If RegexMatch(TheOrderName, "i) ([a-z].*)", TheOrderNameCut) ; Обрезаем до начала названия модели
-			{
-				TheOrderName := "\"TheOrderNameCut1
-			}
-			else ;===================================== Если нет англ. букв
-				TheOrderName := "\"TheOrderName
-		}
-		else ;==================================== Ищем остальные пленки
-		If InStr(TheOrderName, "нка для") 
-		or InStr(TheOrderName, "пленка")
-		or InStr(TheOrderName, "плёнка")
-		or InStr(TheOrderName, "ая для")
-		or InStr(TheOrderName, "матов")
-		or InStr(TheOrderName, "глянц")
-		or InStr(TheOrderName, "нок для")
-		{
-			If RegexMatch(TheOrderName, "i) ([a-z].*)", TheOrderNameCut) ; Обрезаем до начала названия модели
-			{
-				TheOrderName := "/"TheOrderNameCut1
-			}
-			else ;===================================== Если нет англ. букв
-			{
-				TheOrderName := "/"TheOrderName
-			}
-		}
-		
-		OrderPart%WhereIsName% := TheOrderName ; Возвращаем переменной старое имя
-		Resultstring := Resultstring OrderPart1 A_Tab OrderPart2 A_Tab OrderPart3 A_Tab OrderPart4 "`n" ; Записываем все элементы к массиву
-	}
-	Clipboard := Resultstring
-}
-
-CopyOzon()
-{
-	Loop, parse, clipboard, `n, `r
-	{
-		if StrAmount
-		{
-			if A_LoopField
-				Resultstring := Resultstring A_LoopField "`n"
-			StrAmount := false
-		}
-
-		If RegexMatch(A_LoopField, "\d+-\d+-\d+", Result)
-		{
-			Resultstring := Resultstring Result A_Tab
-			Name := true
-		}
-
-		If RegexMatch(A_LoopField, "(.*), (.*) шт\.", Result)
-		{
-			If Name
-				Resultstring := Resultstring Result1 A_Tab Result2 A_Tab
-			if !Name
-				Resultstring := Resultstring A_Tab Result1 A_Tab Result2 A_Tab
-			StrAmount := true
-			Name := false
-		}
-	}
-	Clipboard := Resultstring
-} ; Конец Озона
-
-CopyYandex()
-{
-	Loop, parse, clipboard, `n, `r
-		{
-
-		If RegexMatch(A_LoopField, "\d+ / (.*)", Result)
-		{
-			Resultstring := Resultstring Result1 A_Tab
-			Name := true
-		}
-
-		If RegexMatch(A_LoopField, "(.*) · (.*) шт.", Result) ; Новый яндекс
-		{
-			If Name
-				Resultstring := Resultstring OldString A_Tab Result1 A_Tab Result2 "`n"
-			If !Name
-				Resultstring := Resultstring A_tab OldString A_Tab Result1 A_Tab Result2 "`n"
-
-			Name := false
-		}
-
-		If RegexMatch(A_LoopField, "Ещё \d товар", Result)
-		{
-			MsgBox, Есть еще товар, нужно развернуть все заказы
-			break
-		}
-		If A_LoopField
-			OldString := A_LoopField
-		}
-
-	Clipboard := Resultstring
-} ; Конец Яндекса
-
-
-CopyWB() ; WB
-{
-	Loop, parse, clipboard, `n, `r
-	{
-		If RegexMatch(A_LoopField, "Арт.: (.*)", Result)
-		{
-			Resultstring := Resultstring OldString A_Tab Result1 "`n"
-		}
-
-		else If RegexMatch(A_LoopField, "\d{9}", Result)
-			Resultstring := Resultstring A_LoopField A_Tab
-
-		If A_LoopField
-			OldString := A_LoopField
-	}
-
-	Clipboard := Resultstring
-} ; Конец WB
-
-
-CopyALI() ; ALI
-{
-	Loop, parse, clipboard, `n, `r
-	{
-		If RegexMatch(A_LoopField, "\d{16}", Result)
-		and RegexMatch(OldString, "\d{8}", Result)
-		{
-			Resultstring := Resultstring OldString A_Tab
-		}
-		
-		If (A_LoopField == "Ожидает отправки")
-			COUNT := 3
-		
-		If (COUNT == 2)
-			Resultstring := Resultstring A_LoopField A_Tab
-		
-		If (COUNT == 1)
-			Resultstring := Resultstring A_LoopField A_Tab
-		
-		else If RegexMatch(A_LoopField, "ID: (.*)", Result)
-			Resultstring := Resultstring result1 "`n" 
-
-		If A_LoopField
-		{
-			OldString := A_LoopField
-			COUNT -= 1
-		}
-	}
-	Clipboard := Resultstring
-} ; Конец ALI
-
-
-} ; Копирование в таблицы
-
-
+#If
 
 ; ################################################## Функции
 
@@ -1020,3 +776,281 @@ Return Rqd
 
 	
 }
+
+{ ; ######################################################################### КОПИРОВАНИЕ В ТАБЛИЦУ
+#IfWinActive
+
+OnClipboardChange:
+If WinActive("ahk_exe chrome.exe") or WinActive("ahk_exe browser.exe")
+{
+	MARKETPLACE_COPY :=
+	If RegexMatch(Clipboard, "\d+-\d{4}-\d+", Result) and InStr(Clipboard, "шт.")
+	{
+		global MARKETPLACE_COPY := "OZON"
+		CopyOzon()
+		Sorting(4)
+	}
+	If RegexMatch(Clipboard, "\d{9} / \d{9}", Result)
+	{
+		global MARKETPLACE_COPY := "YANDEX"
+		CopyYandex()
+		Sorting(2)
+	}
+	If InStr(Clipboard, "Ожидает подтверждения передачи") and InStr(Clipboard, "ID:")
+	{
+		global MARKETPLACE_COPY := "ALI"
+		CopyALI()
+		Sorting(2)
+	}
+	If InStr(Clipboard, "2023") and InStr(Clipboard, "Арт.")
+	{
+		global MARKETPLACE_COPY := "WB"
+		CopyWB()
+		Sorting(2)
+	}
+	If MARKETPLACE_COPY and EnableFilter
+	{
+		If (Department == "Аксы/Пленка") ; Фильтруем пленку и аксы
+			FilterPlenka()
+		If (Department == "Сувенирка") ; Фильтруем сувенирку
+			FilterSuvenirka()
+	}
+		
+}
+return
+
+FilterPlenka()
+{
+	Loop, parse, Clipboard, `n, `r
+	{
+		If !InStr(A_LoopField, "Брел") 
+		and !InStr(A_LoopField, "Брасл") 
+		and !InStr(A_LoopField, "Жетон")
+		and !InStr(A_LoopField, "Зажигалк") 
+		and !InStr(A_LoopField, "Подвес") 
+		and !InStr(A_LoopField, "Кулон") 
+		and !InStr(A_LoopField, "Адресник")  
+		and !InStr(A_LoopField, "уф печ") 
+		and !InStr(A_LoopField, "наклейка")
+		and !InStr(A_LoopField, "панно")
+		and !InStr(A_LoopField, "декор")
+		and !InStr(A_LoopField, "подставка под горяч")
+		and !InStr(A_LoopField, "Flash карта с кейсом подарок")
+		or InStr(A_LoopField, "Band") and !InStr(A_LoopField, "Брел")
+			Resultstring := Resultstring A_LoopField "`n"
+	}
+If RegexMatch(Resultstring, "\w", result)
+	Clipboard := Resultstring
+else 
+	MsgBox Не найдено
+}
+
+FilterSuvenirka()
+{
+	Loop, parse, Clipboard, `n, `r
+	{
+		If InStr(A_LoopField, "Брел")
+		or InStr(A_LoopField, "Жетон")
+		or InStr(A_LoopField, "Подвес")
+		or InStr(A_LoopField, "Кулон") 
+		or InStr(A_LoopField, "Зажигалк") 
+		or InStr(A_LoopField, "Ручк") 
+		or InStr(A_LoopField, "Брасл") and !InStr(A_LoopField, "Band")
+			Resultstring := Resultstring A_LoopField "`n"
+	}
+	Clipboard := Resultstring
+	If RegexMatch(Resultstring, "\w", result)
+		Clipboard := Resultstring
+	else 
+		MsgBox Не найдено
+}
+
+Sorting(WhereIsName)
+{
+Loop, parse, clipboard, `n, `r
+	If A_LoopField
+	{
+		StringSplit, OrderPart, A_LoopField, %A_Tab%
+		TheOrderName := OrderPart%WhereIsName%
+		If (MARKETPLACE_COPY == "WB") ; Убираем название бренда
+			{
+			Pos := InStr(TheOrderName, "/")+1
+			TheOrderName := SubStr(TheOrderName, Pos)
+			}
+		If (InStr(TheOrderName, " час") ;============== Ищем часы
+		or InStr(TheOrderName, "-час") 
+		or InStr(TheOrderName, "watch"))
+			and !InStr(TheOrderName, "Band")
+			and !InStr(TheOrderName, "зарядк")
+			and !InStr(TheOrderName, "зарядк")
+			and !InStr(TheOrderName, "стекло")
+			and !InStr(TheOrderName, "чехол")
+			and !InStr(TheOrderName, "не пленка")
+		or (InStr(TheOrderName, "watch")
+		or InStr(TheOrderName, "час"))
+			and InStr(TheOrderName, "не стекло")
+		or InStr(TheOrderName, "Elari")
+		or InStr(TheOrderName, "Polar")
+		or InStr(TheOrderName, "Amazfit")
+		or InStr(TheOrderName, "Huawei band")
+		or InStr(TheOrderName, "Honor magic")
+		or InStr(TheOrderName, "Jet sport")
+		or InStr(TheOrderName, "Jet kid")
+		or InStr(TheOrderName, "Garmin fore")
+		or InStr(TheOrderName, "Garmin viv")
+		or InStr(TheOrderName, "Garmin tact")
+		or InStr(TheOrderName, "Garmin Fen")
+		or InStr(TheOrderName, "Aimoto")
+		or InStr(TheOrderName, "Honor band")
+		or InStr(TheOrderName, "GARMIN Instinct")
+		or InStr(TheOrderName, "Smarus")
+		or InStr(TheOrderName, "Frontier") 
+		or InStr(TheOrderName, "ALFAJR")
+		or InStr(TheOrderName, "Geozon Energy")
+		or InStr(TheOrderName, "Garmin swim")
+		or InStr(TheOrderName, "Garmin venu")
+		or InStr(TheOrderName, "Suunto spartan")
+		or InStr(TheOrderName, "Fitbit")
+		or InStr(TheOrderName, "Suunto")
+		or InStr(TheOrderName, "Casio")
+		or InStr(TheOrderName, "Galaxy Fit")
+		{
+			If RegexMatch(TheOrderName, "i) ([a-z].*)", TheOrderNameCut) ; Обрезаем до начала названия модели
+			{
+				TheOrderName := "\"TheOrderNameCut1
+			}
+			else ;===================================== Если нет англ. букв
+				TheOrderName := "\"TheOrderName
+		}
+		else ;==================================== Ищем остальные пленки
+		If (InStr(TheOrderName, "нка для") 
+		or InStr(TheOrderName, "пленка")
+		or InStr(TheOrderName, "плёнка")
+		or InStr(TheOrderName, "ая для")
+		or InStr(TheOrderName, "матов")
+		or InStr(TheOrderName, "глянц")
+		or InStr(TheOrderName, "нок для"))
+		and !InStr(TheOrderName, "не пленка")
+		{
+			If RegexMatch(TheOrderName, "i) ([a-z].*)", TheOrderNameCut) ; Обрезаем до начала названия модели
+			{
+				TheOrderName := "/"TheOrderNameCut1
+			}
+			else ;===================================== Если нет англ. букв
+			{
+				TheOrderName := "/"TheOrderName
+			}
+		}
+		OrderPart%WhereIsName% := TheOrderName ; Возвращаем переменной старое имя
+		Resultstring := Resultstring OrderPart1 A_Tab OrderPart2 A_Tab OrderPart3 A_Tab OrderPart4 "`n" ; Записываем все элементы к массиву
+	}
+	Clipboard := Resultstring
+}
+
+CopyOzon()
+{
+	Loop, parse, clipboard, `n, `r
+	{
+		if StrAmount
+		{
+			if A_LoopField
+				Resultstring := Resultstring A_LoopField "`n"
+			StrAmount := false
+		}
+		If RegexMatch(A_LoopField, "\d+-\d{4}-\d+", Result)
+		{
+			Resultstring := Resultstring Result A_Tab
+			Name := true
+		}
+		If RegexMatch(A_LoopField, "(.*), (.*) шт\.", Result)
+		{
+			If Name
+				Resultstring := Resultstring Result1 A_Tab Result2 A_Tab
+			if !Name
+				Resultstring := Resultstring A_Tab Result1 A_Tab Result2 A_Tab
+			StrAmount := true
+			Name := false
+		}
+	}
+	Clipboard := Resultstring
+} ; Конец Озона
+
+CopyYandex()
+{
+	Loop, parse, clipboard, `n, `r
+	{
+		If RegexMatch(A_LoopField, "\d+ / (.*)", Result)
+		{
+			Resultstring := Resultstring Result1 A_Tab
+			Name := true
+		}
+		If RegexMatch(A_LoopField, "(.*) · (.*) шт.", Result) ; Новый яндекс
+		{
+			If Name
+				Resultstring := Resultstring OldString A_Tab Result1 A_Tab Result2 "`n"
+			If !Name
+				Resultstring := Resultstring A_tab OldString A_Tab Result1 A_Tab Result2 "`n"
+			Name := false
+		}
+		If RegexMatch(A_LoopField, "Ещё \d товар", Result)
+		{
+			MsgBox, Есть еще товар, нужно развернуть все заказы
+			break
+		}
+		If A_LoopField
+			OldString := A_LoopField
+	}
+	Clipboard := Resultstring
+} ; Конец Яндекса
+
+
+CopyWB() ; WB
+{
+	Loop, parse, clipboard, `n, `r
+	{
+		If RegexMatch(A_LoopField, "Арт. (.*)", Result)
+		{
+			Resultstring := Resultstring OldString A_Tab Result1 "`n"
+		}
+		else If RegexMatch(A_LoopField, "\d{9}", Result)
+			Resultstring := Resultstring A_LoopField A_Tab
+		If A_LoopField
+			OldString := A_LoopField
+	}
+	Clipboard := Resultstring
+} ; Конец WB
+
+
+CopyALI() ; ALI
+{
+	Loop, parse, clipboard, `n, `r
+	{
+		If RegexMatch(A_LoopField, "\d{16}", Result)
+		and RegexMatch(OldString, "\d{8}", Result)
+		{
+			Resultstring := Resultstring OldString A_Tab
+			Name := true
+		}
+		If (A_LoopField == "Ожидает подтверждения передачи")
+			COUNT := 2
+		If (COUNT == 1)
+			Resultstring := Resultstring A_LoopField A_Tab
+		else If RegexMatch(A_LoopField, "ID: (\d+)", Result)
+		{	
+			If Name
+				Resultstring := Resultstring Oldstring A_Tab result1 "`n" 
+			If !Name
+				Resultstring := Resultstring A_Tab A_Tab Oldstring A_Tab result1 "`n" 
+			Name := false
+		}
+		If A_LoopField
+		{
+			OldString := A_LoopField
+			COUNT -= 1
+		}
+	}
+	Clipboard := Resultstring
+} ; Конец ALI
+
+
+} ; /Копирование в таблицы
