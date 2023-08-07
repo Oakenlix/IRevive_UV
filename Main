@@ -393,7 +393,6 @@ return
 
 !1::
 InputBox, Brelok_Amount, Жетоны, Количество макетов:, , 250, 130
-Insert()
 Placement1("Координаты жетонов")
 return
 
