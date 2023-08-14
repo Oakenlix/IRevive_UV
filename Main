@@ -7,7 +7,7 @@ StringCaseSense, Locale
 
 { ; СТАРТ
 
-Script_Version := 1.5
+Script_Version := 2.4
 
 Center_X := A_ScreenWidth/2
 Center_Y := A_ScreenHeight/2
