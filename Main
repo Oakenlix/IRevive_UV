@@ -3,135 +3,131 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 StringCaseSense, Locale
-#Include <JSON> ; AHK-JSON lib ; https://github.com/cocobelgica/AutoHotkey-JSON
+#Include <JSON> ; AHK<->JSON lib ; https://github.com/cocobelgica/AutoHotkey-JSON
 
 { ; СТАРТ
 
-Script_Version := 2.4
+Script_Version := 1.5
 
-global Center_X := A_ScreenWidth/2
-global Center_Y := A_ScreenHeight/2
+Center_X := A_ScreenWidth/2
+Center_Y := A_ScreenHeight/2
 
-Updated_Version := URLDownloadToVar("https://raw.githubusercontent.com/Oakenlix/IRevive_Framework/main/Update")
+Updated_Version := URLDownloadToVar("https://raw.githubusercontent.com/Oakenlix/IRevive_UV/main/Update")
 
-If Updated_Version
-{
 RegexMatch(Updated_Version, "\w.\w", Updated_Version)
 
 If (Script_Version != Updated_Version)
+	If Updated_Version
 	{
-		Updated_text := URLDownloadToVar("https://raw.githubusercontent.com/Oakenlix/IRevive_Framework/main/Main")
+		Updated_text := URLDownloadToVar("https://raw.githubusercontent.com/Oakenlix/IRevive_UV/main/Main")
 		FileCreateDir, %A_ScriptDir%\Backups
 		FileMove, %A_ScriptName%, %A_ScriptDir%\Backups\%A_Hour%%A_Min%-%A_DD%%A_MM%.ahk
 		FileAppend, %Updated_text%, %A_ScriptName%
 		Run, %A_ScriptName%
 		ExitApp
 	}
-}
 	
-URLDownloadToVar(url) 
-{
-	try  ; Attempts to execute code.
-	{
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("GET", url)
-		WebRequest.Send()
-		Return, WebRequest.ResponseText
-	}
-	catch  ; Handles the first error/exception raised by the block above.
-	{
-		MsgBox, 262144, Ошибка, Нет подключения к интернету. Некоторые функции не будут работать.
-	}
+URLDownloadToVar(url) {
+ WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+ WebRequest.Open("GET", url)
+ WebRequest.Send()
+ Return, WebRequest.ResponseText
 }
 
 ; ####################################### Загрузка настроек
 
 If !FileExist("Settings.ini")
 {
-	IniWrite, 0, Settings.ini, window position, RemoveWindow
-	IniWrite, 1, Settings.ini, EzCad, CadDelay1
-	IniWrite, 0 0, Settings.ini, EzCad, Cadclick1
-	IniWrite, 0 0, Settings.ini, EzCad, Cadclick2
-	IniWrite, 0 0, Settings.ini, EzCad, Cadclick3
-	IniWrite, 0 0, Settings.ini, EzCad, Cadclick4
-	IniWrite, 0 0, Settings.ini, EzCad, Cadclick5
+	IniWrite, Имя, Settings.ini, user, name
+	IniWrite, 0, Settings.ini, user, setontop
+	IniWrite, w400 h200, Settings.ini, window position, gui_position
+
+	IniWrite, 0, Settings.ini, Ozon, O_Galochka
+	IniWrite, 0, Settings.ini, Ozon, O_Etiketka
+	IniWrite, 0, Settings.ini, Ozon, O_Poisk
+
+	IniWrite, 0, Settings.ini, Yandex, Y_Poisk
+	IniWrite, 0, Settings.ini, Yandex, Y_Zakaz
+	IniWrite, 0, Settings.ini, Yandex, Y_Kartinka
+	IniWrite, 0, Settings.ini, Yandex, Y_Etiketka
+
+	IniWrite, 0, Settings.ini, WB, W_Galochka
+	IniWrite, 0, Settings.ini, WB, W_Etiketka
 }
 
-IniRead()
 IniRead, username, Settings.ini, user, name, Имя
-IniRead, department, Settings.ini, user, department
-IniRead, EnableFilter, Settings.ini, user, EnableFilter
-IniRead, SetOnTop, Settings.ini, user, SetOnTop
-IniRead, LaunchMinimized, Settings.ini, user, LaunchMinimized
-
+IniRead, username, Settings.ini, user, name
+IniRead, setontop, Settings.ini, user, setontop
 IniRead, gui_position, Settings.ini, window position, gui_position, w400 h200
-IniRead, OZONcol1, Settings.ini, window position, OZONcol1, 100
-IniRead, OZONcol2, Settings.ini, window position, OZONcol2, 100
-IniRead, OZONcol3, Settings.ini, window position, OZONcol3, 100
-IniRead, OZONcol4, Settings.ini, window position, OZONcol4, 100
 
-IniRead, YANDEXcol1, Settings.ini, window position, YANDEXcol1, 100
-IniRead, YANDEXcol2, Settings.ini, window position, YANDEXcol2, 100
-IniRead, YANDEXcol3, Settings.ini, window position, YANDEXcol3, 100
-IniRead, YANDEXcol4, Settings.ini, window position, YANDEXcol4, 100
-
-IniRead, WBcol1, Settings.ini, window position, WBcol1, 100
-IniRead, WBcol2, Settings.ini, window position, WBcol2, 100
-IniRead, WBcol3, Settings.ini, window position, WBcol3, 100
-IniRead, WBcol4, Settings.ini, window position, WBcol4, 100
+IniRead, O_Galochka, Settings.ini, Ozon, O_Galochka
+IniRead, O_Etiketka, Settings.ini, Ozon, O_Etiketka
+IniRead, O_Poisk, Settings.ini, Ozon, O_Poisk
 
 IniRead, Y_Poisk, Settings.ini, Yandex, Y_Poisk
 IniRead, Y_Zakaz, Settings.ini, Yandex, Y_Zakaz
 IniRead, Y_Kartinka, Settings.ini, Yandex, Y_Kartinka
 IniRead, Y_Etiketka, Settings.ini, Yandex, Y_Etiketka
 
-IniRead, RemoveWindow, Settings.ini, window position, RemoveWindow, 0
-IniRead, CadDelay1, Settings.ini, EzCad, CadDelay1, 1
-global Cadclick1
-IniRead, Cadclick1, Settings.ini, EzCad, Cadclick1
-IniRead, Cadclick2, Settings.ini, EzCad, Cadclick2
-IniRead, Cadclick3, Settings.ini, EzCad, Cadclick3
-IniRead, Cadclick4, Settings.ini, EzCad, Cadclick4
-IniRead, Cadclick5, Settings.ini, EzCad, Cadclick5
+IniRead, W_Galochka, Settings.ini, WB, W_Galochka
+IniRead, W_Etiketka, Settings.ini, WB, W_Etiketka
+
 
 LoadMainGUI()
-If LaunchMinimized and (LaunchMinimized != "Error") ; Сразу свернуть, если выбрана эта опция
-		WinMinimize, %A_ScriptName%
-return
+} ; СТАРТ
+
+
+SetSize:
+size1 := 51.7
+size2 := 29.6
+
+
+sleep1 := 50
+sleep2 := 200
+
+VisotaX := 1855 
+VisotaY := 340 
+ZeroX := 780
+ZeroY := 85
+
+
+{ ;############################################### GUI
+
 
 LoadMainGUI()
 {
 	global
 	Gui, Add, Button,, Помощь
-	Gui, Add, Text, xs y+15, Настройки
+	Gui, Add, Text, xs y+20, Настройки
 	Gui, Add, Text, xs, Имя:
-	Gui, Add, Edit, w100 x+3 gGUI_updatesettings vUSERNAME, % username
-	Gui, Add, Text, x+3, Отдел:
-	Gui, Add, DropDownList, w100 x+3 gGUI_updatesettings vDEPARTMENT, Аксы/Пленка|Сувенирка|УФ печать
-	GuiControl, ChooseString, DEPARTMENT, %department%
-	Gui, Add, CheckBox, xs gGUI_updatesettings vEnableFilter Checked%EnableFilter%, Фильтровать заказы по отделу
-	Gui, Add, CheckBox, xs gGUI_updatesettings vSetOnTop Checked%SetOnTop%, Отображать поверх других окон
-	Gui, Add, CheckBox, xs gGUI_updatesettings vLaunchMinimized Checked%launchminimized%, Запускать окно свернутым
+	Gui, Add, Edit, w100 x+5 vUSERNAME, % username
+	Gui, Add, CheckBox, xs vSetontop Checked%setontop%, Отображать поверх других окон
+	Gui, Add, Button, xs default, Сохранить  ; СОХРАНИТЬ НАСТРОЙКИ
+	Gui, Add, Button, x+5, Выйти  ; СОХРАНИТЬ НАСТРОЙКИ
 	SpawnGUI()
 }
 
 SpawnGUI()
 {
 	global
-	If !RemoveWindow
-	{
-		IniRead, gui_position, Settings.ini, window position, gui_position, x300 y200 w250 h250
-		Gui, Show, %gui_position%
-		Gui +Resize
-		If SetOnTop and (SetOnTop != "Error")
-			WinSet, AlwaysOnTop, On, %A_ScriptName%
-	}
+	IniRead, gui_position, Settings.ini, window position, gui_position, "x300 y200 w250 h250"
+	Gui, Show, %gui_position%
+	Gui +Resize
+	If SETONTOP
+		WinSet, AlwaysOnTop, On, %A_ScriptName%
 }
 
-} ; СТАРТ
+ButtonСохранить:
+Gui, Submit, NoHide 
+IniWrite, %username%, Settings.ini, user, name
+IniWrite, %setontop%, Settings.ini, user, setontop
+If SETONTOP
+	WinSet, AlwaysOnTop, On, %A_ScriptName%
+If !SETONTOP
+	WinSet, AlwaysOnTop, Off, %A_ScriptName%
+return
 
 
-{ ;############################################### GUI LABELS
 
 GuiSize:
 AdjustSize()
@@ -148,908 +144,36 @@ return
 
 OnExit("ExitFunc")
 
-ExitFunc(MARKETPLACE)
+ExitFunc()
 {
 	WinActivate, %A_ScriptName%
 	WinGetPos, gui_x, gui_y, size_x, size_y, %A_ScriptName%
 	size_x -= 6
 	size_y -= 29
 	IniWrite, x%gui_x% y%gui_y% w%size_x% h%size_y%, Settings.ini, window position, gui_position
-	
-	Process, Exist
-	WinGet, hw_gui, ID, ahk_class AutoHotkeyGUI ahk_pid %ErrorLevel%
-	
-	If MARKETPLACE ; Если был открыт список заказов, запомнить ширину столбцов
-		loop 4
-		{
-			SendMessage, 0x1000+29, A_Index-1, 0, SysListView321, ahk_id %hw_gui%
-			IniWrite, %ErrorLevel%, Settings.ini, window position, %MARKETPLACE%col%A_Index%
-			IniRead, %MARKETPLACE%col%A_Index%, Settings.ini, window position, %MARKETPLACE%col%A_Index%
-		}
 }
 
-GuiClose:  ; When the window is closed.
-ExitFunc(MARKETPLACE)
-ExitApp
-
-GUI_updatesettings:
-Gui, Submit, NoHide 
-IniWrite, %username%, Settings.ini, user, name
-IniWrite, %department%, Settings.ini, user, department
-IniWrite, %EnableFilter%, Settings.ini, user, EnableFilter
-IniWrite, %SetOnTop%, Settings.ini, user, SetOnTop
-IniWrite, %LaunchMinimized%, Settings.ini, user, LaunchMinimized
-If SetOnTop
-	WinSet, AlwaysOnTop, On, %A_ScriptName%
-If !SetOnTop
-	WinSet, AlwaysOnTop, Off, %A_ScriptName%
-return
-
 ButtonНастройки:
-ExitFunc(MARKETPLACE)
 MARKETPLACE := 
-SHOP_ID :=
+ExitFunc()
 Gui, Destroy
 LoadMainGUI()
 return
 
+ButtonВыйти:
+GuiClose:  ; When the window is closed.
+ExitFunc()
+ExitApp
+
+
 MyTable:
 if (A_GuiEvent = "DoubleClick")
 {
-    LV_GetText(RowText, A_EventInfo, 1)  ; Get the text from the row's first field.
-	WinActivate, ahk_exe chrome.exe
-	WinActivate, ahk_exe browser.exe
-	sleep 200
-	SendInput ^{vk46} ; CTRL+F
-	sleep 100
-	SendInput %RowText%{enter}
-}
-if (A_GuiEvent = "RightClick") ; Клик правой ;
-{
-	LV_GetText(RowText, A_EventInfo, 2)  
-	MSGBox, 4, , Удалить?
-	IfMsgBox, No 
-		return
-	IfMsgBox, Yes 
-	{
-		LV_Delete(A_EventInfo)
-		Gui, Show, , % "IRevive.ahk - [" LV_GetCount() "]"
-	}
-}
-if (A_GuiEvent = "ColClick") ; Клик на заголовок ;
-{ 
-ControlGet, ListviewContent, List,, SysListView321, %A_ScriptName%
-Clipboard := ListviewContent
-}
-return
-
-ButtonПереместить:
-If !APIKEY
-{
-	MsgBox, Не выбран магазин
-	return
-}
-InputBox, supplyId, %A_ScriptName%, Введите ID поставки, , 250, 130
-If supplyId and !ErrorLevel
-{
-	Loop % LV_GetCount()
-	{
-		LV_GetText(RowText, 1, 1) 
-		If W_MOVE(RowText, supplyId)
-			LV_Delete(1)
-		else break
-	}
-}
-return
-
-{ ; API ключи
-SHOP_ID:
-global APIKEY :=
-global CLIENTID :=
-Gui, Submit, NoHide
-If (SHOP_ID == 1)
-	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjE1YjljOWVhLTdmNzAtNGFhMy05YjlmLTJkOTBiYzQ5NTIwMiJ9.aklMsffH8T9dZjqWPrPpC9piErvl7j22rcRQitJz-Mk"
-If (SHOP_ID == 2)
-	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjkxOTY2Nzg3LWE1N2MtNDQwZS1hNWM2LTUzMjU2YzZhYzFiNSJ9.tS3fC0kfXRt-xUEEnGYVHs53P2yo3_16-N-G4Me-VlE"
-If (SHOP_ID == 3)
-	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjJjNjRjOWY4LThhMWEtNDIwNC1hZmRlLTVkMzJlN2YyZmYzOCJ9.9YJFt2BdOz7qJNK67Fh2249q_SEtVyvgXG_IAE3Roow"
-If (SHOP_ID == 4)
-	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjQxYmUxZmY4LTVjNmEtNGE4NC04Njk3LTA1OTM0MGU3NmI2MiJ9.Lv5x5ZVm2MMczZbpHgJbIRJmfDScOrkLsHMD2NUgUHY"
-
-If (SHOP_ID == "PNP")
-{
-	CLIENTID := 903407
-	APIKEY := "9aeee326-c07f-4225-b539-2dfc5416ffba"
-}
-If (SHOP_ID == "PNP - NARD")
-{
-	CLIENTID := 1232668
-	APIKEY := "ec316a38-4276-44ac-92ae-018e64d6f3bf"
-}
-If (SHOP_ID == "PNP - PUZZLE")
-{
-	CLIENTID := 1232684
-	APIKEY := "41874a00-1aac-4e4e-a654-fd1e2d7725b8"
-}
-If (SHOP_ID == "PNPColor")
-{
-	CLIENTID := 903361
-	APIKEY := "fc02109d-8ab2-4e74-b829-0b717b1013f3"
-}
-If (SHOP_ID == "PNPGROUPP")
-{
-	CLIENTID := 1198650 
-	APIKEY := "a2782187-02f1-40e5-977a-bea9f2d63292"
-}
-If (SHOP_ID == "PNPMetall")
-{
-	CLIENTID := 903510
-	APIKEY := "344a7f91-34a3-4dcf-99fa-e4f26be8499d"
-}
-If (SHOP_ID == "UEGrafic")
-{
-	CLIENTID := 509070
-	APIKEY := "e328158c-2726-4e31-93f8-bc5e1f622b49"
-}
-If (SHOP_ID == "UEPlenka")
-{
-	CLIENTID := 563560
-	APIKEY := "8d5da2ed-df09-424d-b48f-f1800c75d39d"
-}
-If (SHOP_ID == "UFpnpColor")
-{
-	CLIENTID := 903485
-	APIKEY := "077e6023-caed-4177-a0c4-0c9ce3f6f34a"
-}
-If (SHOP_ID == "WBW")
-{
-	CLIENTID := 1232719
-	APIKEY := "f44029ff-c1f5-4749-9358-8c72be515522"
-}
-If (SHOP_ID == "Woodcutty")
-{
-	CLIENTID := 1147890
-	APIKEY := "397d932e-c797-47b5-8b49-dda27f2a3f5d"
-}
-If (SHOP_ID == "Защита V10")
-{
-	CLIENTID := 440022
-	APIKEY := "7e655181-7121-4d94-8d63-00531ab22fd2"
-}
-If (SHOP_ID == "ОБА")
-{
-	CLIENTID := 128494
-	APIKEY := "c6c2235a-289c-48b6-90c1-1a06dfb37ce1"
-}
-If (SHOP_ID == "Оптовая база аксессуаров")
-{
-	CLIENTID := 266046
-	APIKEY := "7b6879f1-1458-4a37-8c9b-3a5b978dafe8"
-}
-If (SHOP_ID == "ПНП-Групп")
-{
-	CLIENTID := 1138751
-	APIKEY := "d6913044-2e5d-4ebc-bcb4-b12ae183ee6f"
-}
-If (SHOP_ID == "Подарок со смыслом")
-{
-	CLIENTID := 903384
-	APIKEY := "7a426e1f-80df-46a4-be18-885a449fa3eb"
-}
-If (SHOP_ID == "Премиум Защита")
-{
-	CLIENTID := 440833
-	APIKEY := "5efa14da-100f-477f-8e37-5b69ab4605e0"
-}
-If (SHOP_ID == "Просто надо")
-{
-	CLIENTID := 1147847
-	APIKEY := "aa5b284f-7f4d-486b-a9cb-e6f4952f4e04"
-}
-If (SHOP_ID == "Просто надо покупать")
-{
-	CLIENTID := 718802
-	APIKEY := "63b81af9-3d65-44d9-aec8-88b72c7acec8"
-}
-If (SHOP_ID == "Просто надо померить")
-{
-	CLIENTID := 718880
-	APIKEY := "1e441808-c929-466d-8894-64b7cf86504d"
-}
-If (SHOP_ID == "Родионова Е. Ю.")
-{
-	CLIENTID := 718870
-	APIKEY := "2b7fc54e-7f33-4b94-90c4-2ad95b5aaf63"
-}
-If (SHOP_ID == "Родионова Н. К.")
-{
-	CLIENTID := 563357
-	APIKEY := "33dabb9c-65c9-431a-96c6-c756f47f8270"
-}
-return
-} ; /API ключи
-
-ButtonПомощь:
-HelpString =
-(
-
-Кнопки:
-Alt+0 - загрузить выделенный список заказов
-Alt+1 - перейти к следующему заказу
-Двойной клик на строку - поиск позиции в браузере
-Правый клик на строку - удалить позицию
-Клик на заголовок столбца - сортировка по алфавиту
-
-С вопросами обращайтесь к Саше Н.
-)
-Gui, About:+owner1  ; Make the main window (Gui #1) the owner of the "about box".
-Gui +Disabled  ; Disable main window.
-Gui, About:Add, Text,, %HelpString%
-Gui, About:Add, Text, xs, WhatsApp: 
-Gui, About:Add, Edit, x+3 w90 -E0x200 ReadOnly, +79152970281 ; 
-Gui, About:Add, Button, Default, OK
-Gui, About:Show
-return 
-
-AboutButtonOK:  ; This section is used by the "about box" above.
-AboutGuiClose:
-AboutGuiEscape:
-Gui, 1:-Disabled  ; Re-enable the main window (must be done prior to the next step).
-Gui Destroy  ; Destroy the about box.
-return
-
-} ; Конец GUI
-
-
-{ ; HOTKEYS
-
-:?:/я::
-SendInput % A_DD "." A_Mon A_Space username
-return
-
-:?:/м::
-SendInput % "ФБС " MARKETPLACE A_Space SHOP_ID
-return
-
-:?:/яз::
-SendInput % A_DD "." A_Mon A_Space username
-SendInput {enter}на завтра{tab}{up}
-return
-
-!0::
-KeyWait, Lalt
-ChangeMP := 0
-If !Department or (Department == "ERROR")
-{
-	MsgBox, 262144, Ошибка, Выберите свой отдел в настройках
-	return
-}
-global Current_Line := 1
-SendInput ^{vk43} ; Ctrl C
-sleep 200 ; Нужно для загрузки буфера
-OrderLine := StrSplit(clipboard, "`n", "`r")
-MPTEST := StrSplit(OrderLine[1], A_Tab) ; Проверяем маркетплейс по первой строке
-ExitFunc(MARKETPLACE) ; Запоминаем положение окна
-If (MARKETPLACE != "OZON") and MPTEST[4] and RegexMatch(MPTEST[1], "\d+-\d{4}-\d") ; Если ОЗОН
-{
-	ChangeMP := 1
-	Gui, Destroy
-	MARKETPLACE := "OZON"
-	Gui, Add, Text,, OZON Магазин:
-	If (DEPARTMENT == "Аксы/Пленка")
-		Gui, Add, DropDownList, w110 x+1 vSHOP_ID gSHOP_ID, UEPlenka|Защита V10|ОБА|Оптовая база аксессуаров|Премиум Защита|Просто надо|Просто надо покупать|Родионова Н. К.
-	If (DEPARTMENT == "Сувенирка")
-		Gui, Add, DropDownList, w110 x+1 vSHOP_ID gSHOP_ID, PNP|PNPGROUPP|PNPMetall|UEGrafic|ПНП-Групп|Просто надо|Родионова Е. Ю.|Родионова Н. К.
-	If (DEPARTMENT == "УФ печать")
-		Gui, Add, DropDownList, w110 x+1 vSHOP_ID gSHOP_ID, PNPColor|UFpnpColor
-	Gui, Add, Button, x+3, Настройки
-	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Артикул|Количество|Название
-}
-If (MARKETPLACE != "YANDEX") and MPTEST[4] and RegexMatch(MPTEST[1], "[0-9]{9}") and !InStr(MPTEST[1], "-") ; Если ЯНДЕКС
-{
-	ChangeMP := 1
-	Gui, Destroy
-	MARKETPLACE := "YANDEX"
-	Gui, Add, Text,, YANDEX Магазин:
-	If (DEPARTMENT == "Аксы/Пленка")
-		Gui, Add, DropDownList, w100 x+1 vSHOP_ID gSHOP_ID, Броня|Премиум|УЕАксы|УЕПленка
-	If (DEPARTMENT == "Сувенирка")
-		Gui, Add, DropDownList, w110 x+1 vSHOP_ID gSHOP_ID, IRevive|UEGrafic|UEbrelki
-	If (DEPARTMENT == "УФ печать")
-		Gui, Add, DropDownList, w110 x+1 vSHOP_ID gSHOP_ID, IRevive|UEGrafic|UEbrelki
-	Gui, Add, Button, x+3, Настройки
-	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Количество
-}
-If !MPTEST[4] and (MARKETPLACE != "WB") 										; Если ВБ
-{
-	ChangeMP := 1
-	Gui, Destroy
-	MARKETPLACE := "WB"	
-	Gui, Add, Text,, WB ИП:
-	Gui, Add, DropDownList, w70 x+1 vSHOP_ID gSHOP_ID, 1|2|3|4
-	Gui, Add, Button, x+3 vMoveOrders, Переместить
-	Gui, Add, Button, x+3, Настройки
-	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Этикетка
-}
-LoadTable()
-
-Loop 4
-	LV_ModifyCol(A_Index, %MARKETPLACE%col%A_Index%)  ;% %MARKETPLACE%col%A_Index%
-
-Gui, Show, , % "IRevive.ahk - [" LV_GetCount() "]"
-
-If ChangeMP
-	SpawnGUI()
-return
-
-LoadTable() ; ДОБАВЛЕНИЕ ТАБЛИЦЫ В LISTVIEW
-{
-	global
-	GuiControl, -Redraw, MyTable 
-	LV_Delete()
-	loop % OrderLine.MaxIndex()
-	{
-		OrderPart := StrSplit(OrderLine[A_Index], A_Tab)
-		If OrderLine[A_Index]
-			LV_Add("", OrderPart[1], OrderPart[2], OrderPart[3], OrderPart[4])
-	}
-	GuiControl, +Redraw, MyTable
-}
-
-; ############################################################ LOCAL HOTKEYS
-
-#If (DEPARTMENT == "Аксы/Пленка")
-{
-!1::
-KeyWait, Lalt
-sleep 100
-Result1 :=
-If (MARKETPLACE == "OZON")
-	Ozon1()
-If (MARKETPLACE == "WB")
-	WB1()
-If (MARKETPLACE == "YANDEX")
-	YANDEX1()
-return
-} ; /Аксы/Пленка
-
-#If (DEPARTMENT == "Сувенирка")
-{
-!1::
-KeyWait, Lalt
-sleep 100
-Result1 :=
-
-If (MARKETPLACE == "OZON")
-	Ozon1()
-
-If (MARKETPLACE == "WB")
-	WB1()
-
-If (MARKETPLACE == "YANDEX")
-	YANDEX1()
-return
-
-#If (DEPARTMENT == "Сувенирка") and WinActive("EzCad") 
-
-Numpadmult::
-Click, 580 100
-return
-
-NumpadSub::
-Click, 615 100
-return
-
-!2::
-KeyWait, Lalt
-Gui, Templates:Add, Text, y+10, Тип:
-Gui, Templates:Add, DropDownList, w100 x+2 vMAKETTYPE, Жетоны||Плашки|Лезвия|Круги|Металлические браслеты|Кулоны|Резина|Кулоны|Ручка Slim (колпачок)|Ручка Slim (основание)|Ручка Стилус (колпачок)|Ручка Стилус (основание)|Пазлы левые|Пазлы правые
-Gui, Templates:Add, Text, xs y+5, Кол-во макетов:
-Gui, Templates:Add, Edit, w60 x+3 vBrelok_Amount
-Gui, Templates:Add, Button, xs gMassplacement default, OK  ; OK
-Gui, Templates:Show, w200 h100
-WinSet, AlwaysOnTop, On, %A_ScriptName%
-GuiControl, Templates:Focus, Brelok_Amount
-return
-
-TemplatesGuiClose:
-Gui, Templates:destroy
-return
-
-Massplacement:
-Gui, Templates:Submit, NoHide
-If (MAKETTYPE == "Жетоны")
-{
-SizeX := 24
-SizeY := 38
-}
-If (MAKETTYPE == "Плашки")
-{
-SizeX := 30
-SizeY := 13
-}
-If (MAKETTYPE == "Лезвия")
-{
-SizeX := 17
-SizeY := 32
-}
-If (MAKETTYPE == "Круги")
-{
-SizeX := 45
-SizeY := 45
-}
-If (MAKETTYPE == "Металлические браслеты")
-{
-SizeX := 
-SizeY := 5
-}
-If (MAKETTYPE == "Кулоны")
-{
-SizeX := 19.333
-SizeY := 19.333
-}
-If (MAKETTYPE == "Резина")
-{
-SizeX := 
-SizeY := 5
-}
-If (MAKETTYPE == "Кулоны")
-{
-SizeX := 19.333
-SizeY := 19.333
-}
-If (MAKETTYPE == "Ручка Slim (колпачок)")
-{
-SizeX := 
-SizeY := 6
-}
-If (MAKETTYPE == "Ручка Slim (основание)")
-{
-SizeX := 
-SizeY := 4
-}
-If (MAKETTYPE == "Ручка Стилус (колпачок)")
-{
-SizeX := 
-SizeY := 6
-}
-If (MAKETTYPE == "Ручка Стилус (основание)")
-{
-SizeX := 
-SizeY := 4
-}
-If (MAKETTYPE == "Пазлы левые")
-{
-SizeX := 12
-SizeY := 15
-}
-If (MAKETTYPE == "Пазлы правые")
-{
-SizeX := 15
-SizeY := 15
-}
-Gui, Templates:Destroy
-;Winactivate, EzCad
-sleep 200
-loop %Brelok_Amount%
-{
-Click, 70 130 ; Click1
-sleep % 100*CadDelay1					;задержка1
-FileReadLine, The_Line, %MAKETTYPE%.txt, A_Index
-StringSplit, Coords, The_Line, %A_Space%
-PrintALL(Coords1, Coords2, Coords3, Coords4, SizeX, SizeY)
-sleep % 100*CadDelay1					;задержка2
-}
-return
-
-PrintALL(Coords1, Coords2, Coords3, Coords4, SizeX, SizeY) ; альт+2
-{
-MouseGetPos, MouseX, MouseY
-Click, %Cadclick1% ; Ввод координат
-sleep 100
-Sendinput {bs 10}
-sleep 50
-SendInput %Coords1%{Tab}
-sleep 50
-SendInput %Coords2%{Tab}
-sleep 50
-If Coords3
-	SendInput %Coords3%{Tab}
-else
-	SendInput %SizeX%{Tab}
-sleep 50
-If Coords4
-	SendInput %Coords4%{enter}
-else
-	SendInput %SizeY%{enter}
-sleep 100
-Click, 430 70 ; Click3
-sleep 100
-Sendinput {enter}
-sleep 200
-Click, 1775 280 ; Click4
-sleep 200
-Click, %MouseX% %MouseY%, 0
-}
-
-
-Print(Line) ; Расстановка жетонов по 1
-{
-MouseGetPos, MouseX, MouseY
-FileReadLine, The_Line, Жетоны.txt, %Line%
-StringSplit, Coords, The_Line, %A_Space%
-sleep 50
-Click, %Cadclick1% ; Ввод координат
-sleep 100
-Sendinput {bs 10}
-sleep 50
-SendInput %Coords1%{Tab}
-sleep 50
-SendInput %Coords2%{Tab}
-sleep 50
-If Coords3
-	SendInput %Coords3%{Tab}
-else
-	SendInput 24{Tab}
-sleep 50
-If Coords4
-	SendInput %Coords4%{enter}
-else
-	SendInput 38{enter}
-sleep 50
-Click, 430 70 ; Click2
-sleep 100
-Sendinput {enter}
-sleep 100
-Click, 1775 280 ; CLick3
-Click, %MouseX% %MouseY%, 0
-}
-
-Print2(Line) ; Расстановка плашек по 1
-{
-MouseGetPos, MouseX, MouseY
-FileReadLine, The_Line, Плашки.txt, %Line%
-StringSplit, Coords, The_Line, %A_Space%
-sleep 50
-Click, %Cadclick1% ; Ввод координат
-sleep 100
-Sendinput {bs 10}
-sleep 50
-SendInput %Coords1%{Tab}
-sleep 50
-SendInput %Coords2%{Tab}
-sleep 50
-If Coords3
-	SendInput %Coords3%{Tab}
-else
-	SendInput 30{Tab}
-sleep 50
-If Coords4
-	SendInput %Coords4%{enter}
-else
-	SendInput 13{enter}
-sleep 50
-Click, 430 70 ; Click2
-sleep 100
-Sendinput {enter}
-sleep 100
-Click, 1775 280 ; CLick3
-Click, %MouseX% %MouseY%, 0
-}
-
-
-Numpad1::
-Print(1)
-return
-
-Numpad2::
-Print(2)
-return
-
-Numpad3::
-Print(3)
-return
-
-Numpad4::
-Print(4)
-return
-
-Numpad5::
-Print(5)
-return
-
-Numpad6::
-Print(6)
-return
-
-Numpad7::
-Print(7)
-return
-
-Numpad8::
-Print(8)
-return
-
-Numpad9::
-Print(9)
-return
-
-Numpad0::
-Print(10)
-return
-
-^Numpad1::
-Print(11)
-return
-
-^Numpad2::
-Print(12)
-return
-
-^Numpad3::
-Print(13)
-return
-
-^Numpad4::
-Print(14)
-return
-
-^Numpad5::
-Print(15)
-return
-
-
-; КОЖАНЫЕ
-
-!Numpad1::
-Print2(1)
-return
-
-!Numpad2::
-Print2(2)
-return
-
-!Numpad3::
-Print2(3)
-return
-
-!Numpad4::
-Print2(4)
-return
-
-!Numpad5::
-Print2(5)
-return
-
-!Numpad6::
-Print2(6)
-return
-
-!Numpad7::
-Print2(7)
-return
-
-!Numpad8::
-Print2(8)
-return
-
-!Numpad9::
-Print2(9)
-return
-
-!Numpad0::
-Print2(10)
-return
-
-#If (DEPARTMENT == "Сувенирка") and WinActive("CorelDRAW") 
-
-/*
-!3::
-Click, 660 100
-Sendinput {up 2}{right}{up}{enter}
-sleep 1000
-Click, 780 80
-sleep 1000
-Click, 850 120
-sleep 1000
-Click, 850 200
-sleep 1000
-Click, 700 80
-sleep 500
-Click, 934 222
-sleep 500
-Click, 685 270
-sleep 1300
-Sendinput {tab}
-sleep 1000
-Sendinput {tab}
-sleep 200
-Sendinput {down 2}{enter}
-sleep 200
-Click, 860 600
-return
-*/
-
-} ; /Сувенирка
-
-#If (DEPARTMENT == "УФ печать")
-{
-	
-} ; /УФ печать
-
-#If
-#Include *i Local.ahk
-; ########################################################### /LOCAL HOTKEYS
-}
-
-{ ; Заказы 
-{ ; ========================================================= OZON
-Ozon1()
-{
-If !APIKEY
-{
-	MsgBox, Не выбран магазин
-	return
-}
-If !WinActive("ahk_exe chrome.exe") and !WinActive("ahk_exe browser.exe")
-{
-	WinActivate, ahk_exe chrome.exe
-	WinActivate, ahk_exe browser.exe
-	sleep 200
-}
-loop 10 
-{
-	WinGetActiveTitle, Title
-	If InStr(Title, "в интернет-магазине OZON") or InStr(Title, ".pdf")
-	{
-		SendInput ^{vk57} ; CTRL+W Закрыть вкладку
-	}
-	else break
-	sleep 150
-}
-
-NextOrder()
-If (Current_Line > LV_GetCount())
-{
-	MsgBox, 262144,, Конец списка
-	return
-}
-LV_GetText(OrderNumber, Current_Line, 1)
-
-If O_LAB2(O_LAB(OrderNumber))
-{		
-	Loop 10 ; Цикл проверки загрузки ярлыка
-	{
-	WinGetActiveTitle, Title
-	If InStr(Title, "posting-label-") or InStr(Title, ".pdf")
-		{
-		sleep 1200
-		SendInput ^{vk50} ; ctrl+P
-		sleep 2000
-		SendInput {enter}
-		sleep 800
-		break
-		}
-		sleep 200
-	}
-
-	O_PIC(OrderNumber)
-
-	LV_GetText(OrderQuantity, Current_Line, 3) ; Проверка количества
-		If (OrderQuantity > 1) 
-			MsgBox, 262144, OZON, % "КОЛИЧЕСТВО: " OrderQuantity ; ; Напоминание о количестве
-}
-
-} ; OZON1
-
-} ; ========================================================= КОНЕЦ OZON
-
-Yandex1() ;========================================================= YANDEX
-{
-global
-If !WinActive("ahk_exe chrome.exe") and !WinActive("ahk_exe browser.exe")
-{
-	WinActivate, ahk_exe chrome.exe
-	WinActivate, ahk_exe browser.exe
-	sleep 200
-}
-loop 10 ; Чистка вкладок
-{
-	WinGetActiveTitle, Title
-	If InStr(Title, "Заказы и отгрузки")
-	{
-		break
-	}
-	If InStr(Title, "на Яндекс Маркете") or InStr(Title, "Страница товара") or RegexMatch(Title, "\w{8}-\w{4}-\w{4}-\w{4}-\w{12}", Result)
-	{
-		SendInput ^{vk57}		 ; ctrl+W
-		SendInput ^{PgUp}		 ; Предыдущая вкладка
-		sleep 100
-	}
-
-	else If !InStr(Title, "Заказы и отгрузки")
-	{
-		SendInput ^{PgUp}		 ; Предыдущая вкладка
-	}
-	sleep 100
-}
-SendInput {esc}
-sleep 200
-
-NextOrder()
-If (Current_Line > LV_GetCount())
-{
-	MsgBox, 262144,, Конец списка
-	return
-}
-LV_GetText(OrderNumber, Current_Line, 1)
-
-sleep 100
-WinGetActiveTitle, Title
-If InStr(Title, "Заказы и отгрузки")
-{	
-	SendInput {tab}
-	sleep 100
-	SendInput {home}
-	sleep 200
-	Click, % Y_Poisk		; Окно поиска
-	sleep 100
+	LV_GetText(OrderNumber, A_EventInfo, 1)  ; Get the text from the row's first field.
 	Clipboard := OrderNumber
-	Sendinput ^{vk41}^{vk56}
-	sleep 1700
-	Click, %	Y_Zakaz				; Клик на номер заказа
-	sleep 1500
-	Click, % Y_Kartinka ", M"			; Креатив
-	SendInput {LAlt}			; Убрать промотку после нажатия колесика
-	Click, 0 90, M Rel			; Креатив 2
-	SendInput {LAlt}			
-	sleep 100
-	Click, % Y_Etiketka			; Ярлык
-	Click, 0 90 Rel								; Ярлык 2
-
-	sleep 3000
-	
-	Loop 40 ; Цикл проверки загрузки ярлыка
-		{
-			WinGetActiveTitle, Title
-			If RegexMatch(Title, "\w{8}-\w{4}-\w{4}-\w{4}-\w{12}", Result)
-			{
-			sleep 2000
-			SendInput ^{vk50} ; ctrl+P
-			sleep 2200
-			SendInput {enter}
-			sleep 500
-			SendInput ^{PgDn}
-			sleep 500
-			SendInput {down 2}
-			Click, %Center_X% %Center_Y% 0
-			break
-			}
-			sleep 250
-		}
-		
-	LV_GetText(OrderQuantity, Current_Line, 4) ; Проверка количества
-	If (OrderQuantity > 1) 
-		MsgBox, 262144, YANDEX, % "КОЛИЧЕСТВО: " OrderQuantity ; ; Напоминание о количестве
-}
-return
-} ; ========================================================= Конец YANDEX
-
-{ ; ========================================================= WB
-WB1()
-{
-	If !APIKEY
-	{
-		MsgBox, Не выбран магазин
-		return
-	}
-	If !WinActive("ahk_exe chrome.exe") and !WinActive("ahk_exe browser.exe")
-	{
-		WinActivate, ahk_exe chrome.exe
-		WinActivate, ahk_exe browser.exe
-		sleep 200
-	}
-	sleep 100
+	WinActivate, ahk_exe chrome.exe
+	WinActivate, ahk_exe browser.exe
+	sleep 200
 	loop 10 
 	{
 		WinGetActiveTitle, Title
@@ -1060,43 +184,457 @@ WB1()
 		else break
 		sleep 100
 	}
-
-	NextOrder()
-	If (Current_Line > LV_GetCount())
+	APIPOST(OrderNumber, False) ; Этикетка	
+	Loop 20 ; Цикл проверки загрузки ярлыка
 	{
-		MsgBox, 262144,, Конец списка
-		return
-	}
-	LV_GetText(OrderNumber, Current_Line, 1)
-	
-	If W_LAB(OrderNumber, False) ; Если получилось загрузить этикетку
-	{
-		Loop 20 ; Цикл проверки загрузки ярлыка
+	WinGetActiveTitle, Title
+	If InStr(Title, "temp.bmp (580")
 		{
-		WinGetActiveTitle, Title
-		If InStr(Title, "temp.bmp (580")
-			{
-			sleep 500
-			SendInput ^{vk50} ; ctrl+P
-			sleep 2000
-			SendInput {enter}
-			sleep 500
-			break
-			}
-		sleep 250
+		sleep 500
+		SendInput ^{vk50} ; ctrl+P
+		sleep 2000
+		SendInput {enter}
+		sleep 500
+		break
 		}
-		W_PIC(OrderNumber) ; Креатив
+	sleep 250
 	}
+	APIGET(OrderNumber) ; Креатив
+}
+if (A_GuiEvent = "RightClick") ; Клик правой ;
+{
+	LV_GetText(RowText, A_EventInfo, 2)  
+	MSGBox, 4, , Удалить?
+	IfMsgBox, No 
+		return
+	IfMsgBox, Yes 
+	{
+		LV_Delete(A_EventInfo)
+	}
+}
+return
+
+Убратьгалочки:
+LV_Modify(0, "-Check")
+return
+
+ButtonПереместить:
+InputBox, supplyId, A_ScriptName, Введите ID поставки, , 250, 130
+If supplyId
+Loop % LV_GetCount()
+{
+	LV_GetText(RowText, 1, 1) 
+	APIPATCH(RowText, supplyId)
+	LV_Delete(1)
+}
+MsgBox, Готово
+return
+
+WBIP:
+global APIKEY :=
+Gui, Submit, NoHide
+If (WBIP == 1)
+	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjE1YjljOWVhLTdmNzAtNGFhMy05YjlmLTJkOTBiYzQ5NTIwMiJ9.aklMsffH8T9dZjqWPrPpC9piErvl7j22rcRQitJz-Mk"
+If (WBIP == 2)
+	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjkxOTY2Nzg3LWE1N2MtNDQwZS1hNWM2LTUzMjU2YzZhYzFiNSJ9.tS3fC0kfXRt-xUEEnGYVHs53P2yo3_16-N-G4Me-VlE"
+If (WBIP == 3)
+	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjJjNjRjOWY4LThhMWEtNDIwNC1hZmRlLTVkMzJlN2YyZmYzOCJ9.9YJFt2BdOz7qJNK67Fh2249q_SEtVyvgXG_IAE3Roow"
+If (WBIP == 4)
+	APIKEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NJRCI6IjQxYmUxZmY4LTVjNmEtNGE4NC04Njk3LTA1OTM0MGU3NmI2MiJ9.Lv5x5ZVm2MMczZbpHgJbIRJmfDScOrkLsHMD2NUgUHY"
+return
 
 
-} ; WB1
+ButtonПомощь:
+HelpString =
+(
+
+Кнопки:
+Alt+0 - загрузить выделенный список заказов
+Alt+1 - перейти к следующему заказу
+Alt+2 - распечатать ярлык для отмеченного заказа (Ozon)
+Правый клик на строку - удалить позицию
+
+)
+Gui, About:+owner1  ; Make the main window (Gui #1) the owner of the "about box".
+Gui +Disabled  ; Disable main window.
+Gui, About:Add, Text,, %HelpString%
+Gui, About:Add, Button, Default, OK
+Gui, About:Show
+return
+
+AboutButtonOK:  ; This section is used by the "about box" above.
+AboutGuiClose:
+AboutGuiEscape:
+Gui, 1:-Disabled  ; Re-enable the main window (must be done prior to the next step).
+Gui Destroy  ; Destroy the about box.
+return
+
+} ; Конец GUI
+
+return
 
 
-} ; ========================================================= Конец WB
 
+{ ; HOTKEYS start
+
+:?:/я::
+SendInput % A_DD "." A_Mon A_Space username
+return
+
+:?:/яз::
+SendInput % A_DD "." A_Mon A_Space username
+SendInput {enter}на завтра{tab}{up}
+return
+
+!0::
+global Current_Line := 1
+SendInput ^{vk43} ; Ctrl C
+sleep 200 ; Нужно для загрузки буфера
+OrderLine := StrSplit(clipboard, "`n", "`r")
+MPTEST := StrSplit(OrderLine[1], A_Tab) ; Проверяем маркетплейс по первой строке
+ExitFunc() ; Запоминаем положение окна
+
+If (MARKETPLACE != "OZON") and MPTEST[4] and RegexMatch(MPTEST[1], "\d+-\d{4}-\d") ; Если ОЗОН
+{
+	Gui, Destroy
+	MARKETPLACE := "OZON"
+	Gui, Add, Text,, OZON Магазин:
+	Gui, Add, DropDownList, w80 x+3 vWBIP gWBIP, УЕПЛенка|ЗащитаV10|Остальные
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMainpage, Настройки
+	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Артикул|Количество|Название
+	IniRead, gui_position, Settings.ini, window position, gui_position, "x300 y200 w250 h250"
+	SpawnGUI()
+}
+If (MARKETPLACE != "YANDEX") and MPTEST[4] and RegexMatch(MPTEST[1], "[0-9]{9}") and !InStr(MPTEST[1], "-") ; Если ЯНДЕКС
+{
+	Gui, Destroy
+	MARKETPLACE := "YANDEX"
+	Gui, Add, Text,, YANDEX Магазин:
+	Gui, Add, DropDownList, w80 x+3 vWBIP gWBIP, Броня|Премиум|УЕАксы|УЕПленка
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMainpage, Настройки
+	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Количество
+	SpawnGUI()
+}
+If !MPTEST[4] and (MARKETPLACE != "WB") 										; Если ВБ
+{
+	Gui, Destroy
+	MARKETPLACE := "WB"	
+	Gui, Add, Text,, WB ИП:
+	Gui, Add, DropDownList, w50 x+3 vWBIP gWBIP, 1|2|3|4
+	Gui, Add, Button, x+3 gУбратьгалочки, Убрать галочки
+	Gui, Add, Button, x+3 vMoveOrders, Переместить
+	Gui, Add, Button, x+3 vMainpage, Настройки
+	Gui, Add, ListView, xs w400 h300 vMyTable gMyTable LV0x100 Grid Checked AltSubmit Count100, Номер|Название|Артикул|Макет
+	SpawnGUI()
+}
+
+GuiControl, -Redraw, MyTable ; ДОБАВЛЕНИЕ ТАБЛИЦЫ В LISTVIEW
+LV_Delete()
+loop % OrderLine.MaxIndex()
+	{
+	OrderPart := StrSplit(OrderLine[A_Index], A_Tab)
+	If OrderLine[A_Index]
+		LV_Add("", OrderPart[1], OrderPart[2], OrderPart[3], OrderPart[4])
+	}
+GuiControl, +Redraw, MyTable	
+LV_ModifyCol()
+SendInput {Alt up}
+return
+
+
+^1::
+If !APIKEY
+{
+	MsgBox, Не выбран магазин
+	return
+}
+loop 10 
+{
+	WinGetActiveTitle, Title
+	If InStr(Title, "в интернет-магазине Wildberries") or InStr(Title, "temp.bmp (580")
+	{
+		SendInput ^{vk57} ; CTRL+W Закрыть вкладку
+	}
+	else break
+	sleep 100
+}
+
+NextOrder()
+LV_GetText(OrderNumber, Current_Line, 1)
+APIPOST(OrderNumber, False) ; Этикетка	
+Loop 20 ; Цикл проверки загрузки ярлыка
+{
+WinGetActiveTitle, Title
+If InStr(Title, "temp.bmp (580")
+	{
+	sleep 500
+	SendInput ^{vk50} ; ctrl+P
+	sleep 2000
+	SendInput {enter}
+	sleep 500
+	break
+	}
+sleep 250
+}
+APIGET(OrderNumber) ; Креатив
+return
+
+^2::
+
+return
+
+
+} ; HOTKEYS END
+
+#IfWinactive, ACRORIP
+
+
+!1::
+InputBox, Brelok_Amount, Жетоны, Количество макетов:, , 250, 130
+Placement1("Координаты жетонов")
+return
+
+!2::
+InputBox, Brelok_Amount, Круги, Количество макетов:, , 250, 130
+Placement2("Координаты кругов")
+return
+
+!3::
+InputBox, Brelok_Amount, Паззлы, Количество макетов:, , 250, 130
+size1 := 
+size2 := 
+Placement1("Координаты паззлов")
+Goto, SetSize
+return
+
+!4::
+InputBox, Brelok_Amount, Зажигалки бензин, Количество макетов:, , 250, 130
+Placement2("Координаты зажигалок")
+return
+
+!5::
+InputBox, Brelok_Amount, Зажигалки негр, Количество макетов:, , 250, 130
+Placement2("Зажигал черные")
+return
+
+!6::
+InputBox, Brelok_Amount, Деревянные брелки, Количество макетов:, , 250, 130
+Placement2("Координаты дерева")
+return
+
+!7::
+InputBox, Brelok_Amount, Футляры, Количество макетов:, , 250, 130
+Placement2("Координаты футляров")
+return
+
+!8::
+InputBox, Brelok_Amount, Флешки, Количество макетов:, , 250, 130
+Placement2("Координаты флешек")
+return
+
+Insert()
+{
+	global
+	Loop % Brelok_Amount
+	{
+		NextOrder()
+		If LV_GetText(OrderName, Current_Line, 2)
+		{
+			If InStr(OrderName, "печатью")
+				Pos := InStr(OrderName, "печатью")+8
+			If InStr(OrderName, "в подарок")
+				Pos := InStr(OrderName, "в подарок")+10
+			If Pos
+			{
+				OrderName := SubStr(OrderName, Pos)
+				SendInput {insert}
+				sleep 500
+				SendInput ^{vk46}
+				sleep 500
+				SendInput %OrderName%
+				KeyWait, Enter, D
+				KeyWait, Enter
+				sleep 2000
+			}
+		}
+	}
+}
+
+Placement1(FileName)
+{
+	global
+	sleep 200
+
+	loop % Brelok_Amount
+	{
+		if GetKeyState("Esc")
+			break
+
+		FileReadLine, The_Line, %FileName%.txt, A_Index
+		StringSplit, Coords, The_Line, %A_Space%
+
+		Click, %ZeroX% %ZeroY% 0		; Клик в начало координат
+		DoubleClick()
+		sleep 300
+
+		Click, %VisotaX% %VisotaY% 0 ; Высота
+		DoubleClick()
+		sleep %sleep1%
+		SendInput %size1%{enter}
+		sleep %sleep1%
+		Sendinput {up}
+		sleep %sleep1%
+		SendInput %size2%{enter}
+		sleep %sleep1%
+		Sendinput {up}{up}
+		sleep %sleep1%
+		SendInput %Coords2%{enter}
+		sleep %sleep1%
+		Sendinput {up}
+		sleep %sleep1%
+		SendInput %Coords1%{enter}
+	}
+}
+
+Placement2(FileName)
+{
+global
+sleep 200
+
+loop %Brelok_Amount%
+{
+if GetKeyState("Esc")
+	break
+
+FileReadLine, The_Line, %FileName%.txt, A_Index
+StringSplit, Coords, The_Line, %A_Space%
+
+Click, %ZeroX% %ZeroY% 0		; Клик в начало координат
+DoubleClick()
+sleep 300
+
+Click, %VisotaX% 280 0 ; Размер Y
+DoubleClick()
+sleep %sleep1%
+SendInput %Coords2%{enter}
+sleep %sleep1%
+Sendinput {up}
+sleep %sleep1%
+SendInput %Coords1%{enter}
+}
+}
+
+DoubleClick()
+{
+Sendinput {LButton down}
+sleep 100
+Sendinput {Lbutton up}
+sleep 100
+Sendinput {LButton down}
+sleep 100
+Sendinput {Lbutton up}
+sleep 100
+}
+
+
+Numpad1::
+FileReadLine, The_Line, Координаты.txt, 1
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad2::
+FileReadLine, The_Line, Координаты.txt, 2
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad3::
+FileReadLine, The_Line, Координаты.txt, 3
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad4::
+FileReadLine, The_Line, Координаты.txt, 4
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad5::
+FileReadLine, The_Line, Координаты.txt, 5
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad6::
+FileReadLine, The_Line, Координаты.txt, 6
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad7::
+FileReadLine, The_Line, Координаты.txt, 7
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+Numpad8::
+FileReadLine, The_Line, Координаты.txt, 8
+StringSplit, Coords, The_Line, %A_Space%
+sleep 50
+Print(Coords1, Coords2)
+return
+
+
+Print(Coords1, Coords2) ; БРЕЛКИ
+{
+Click, %VisotaX% %VisotaY% 0 ; Высота
+DoubleClick()
+sleep %sleep1%
+SendInput 51.7{enter}
+sleep %sleep1%
+Sendinput {up}
+sleep %sleep1%
+SendInput 29.6{enter}
+sleep %sleep1%
+Sendinput {up}{up}
+sleep %sleep1%
+SendInput %Coords2%{enter}
+sleep %sleep1%
+Sendinput {up}
+sleep %sleep1%
+SendInput %Coords1%{enter}
+}
+
+Print2(Coords1, Coords2) ; Без размеров
+{
+Click, %VisotaX% %VisotaY% 0 ; Высота
+DoubleClick()
+sleep %sleep1%
+SendInput %Coords2%{enter}
+sleep %sleep1%
+Sendinput {up}
+sleep %sleep1%
+SendInput %Coords1%{enter}
+}
+
+#If
+
+; ################################################## Функции
 
 NextOrder() ; ##### Переход к следующему неотмеченному заказу
 {
+	LV_Modify(Current_Line, "-Select")
 	global Current_Line :=
 	RowNumber := 0  ; This causes the first loop iteration to start the search at the top of the list.
 	Loop
@@ -1115,11 +653,16 @@ NextOrder() ; ##### Переход к следующему неотмеченн�
 			break
 		}
 	}
-	LV_Modify(0, "-Select")
 	LV_Modify(Current_Line, "Select")
 	LV_Modify(Current_Line, "Check")
 	LV_Modify(Current_Line+2, "Vis")
 	LV_Modify(Current_Line, "Vis")
+	
+	If (Current_Line > LV_GetCount())
+	{
+		MsgBox, 262144,, Конец списка
+		return
+	}
 }
 
 AmountCheck(Current_Number) ; Проверка количества
@@ -1144,206 +687,76 @@ AmountCheck(Current_Number) ; Проверка количества
 	}
 }
 
-} ; /Заказы
-
-{ ; ################################################################################# API
-
-{ ; OZON API
-
-O_LAB(OrderID, p := False) ; Получить номер задания для создания этикетки
-{
-	try
-	{
-		body := {"posting_number": [OrderID]} ; this is now an ahk object
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("POST", "https://api-seller.ozon.ru/v1/posting/fbs/package-label/create")
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.setRequestHeader("Accept", "application/json")
-		WebRequest.setRequestHeader("Client-Id", CLIENTID)
-		WebRequest.SetRequestHeader("Api-Key", APIKEY)
-		WebRequest.Send(JSON.Dump(body))
-
-		httpStatus := WebRequest.Status
-		Arr := WebRequest.responseBody
-		pData := NumGet(ComObjValue(Arr) + 8 + A_PtrSize)
-		length := Arr.MaxIndex() + 1
-		response := StrGet(pData, length, "UTF-8")
-
-		Result := {"result": p ? JSON.Load(response) : response, "status": httpStatus}
-		Append := % Result["result"]
-		RegexMatch(Append, "task_id"":(.*)}}", task_id)
-		return task_id1
-	}
-	catch
-	{
-		return
-	}
-}
-
-O_LAB2(OrderID, p := False) ; Открыть этикетку
-{
-	If OrderID
-	{
-		sleep 400
-		body := {"task_id": OrderID} ; this is now an ahk object
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("POST", "https://api-seller.ozon.ru/v1/posting/fbs/package-label/get")
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.setRequestHeader("Accept", "application/json")
-		WebRequest.setRequestHeader("Client-Id", CLIENTID)
-		WebRequest.SetRequestHeader("Api-Key", APIKEY)
-		WebRequest.Send(JSON.Dump(body))
-
-		httpStatus := WebRequest.Status
-		Arr := WebRequest.responseBody
-		pData := NumGet(ComObjValue(Arr) + 8 + A_PtrSize)
-		length := Arr.MaxIndex() + 1
-		response := StrGet(pData, length, "UTF-8")
-
-		Result := {"result": p ? JSON.Load(response) : response, "status": httpStatus}
-		Append := % Result["result"]
-		RegexMatch(Append, "file_url"":""(.*)""}}", label_url)
-		If label_url1
-		{
-			Run, % label_url1
-			return true
-		}
-	}
-	else
-	{
-		MsgBox, 262144, Ошибка, Не удалось скачать этикетку.
-		LV_Modify(Current_Line, "-Check")
-	}
-}
-
-
-O_PIC(OrderID, p := False) ; Получить информацию о заказе
-{
-	try
-	{
-		body := {"posting_number":OrderID}
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("POST", "https://api-seller.ozon.ru/v3/posting/fbs/get")
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.setRequestHeader("Accept", "application/json")
-		WebRequest.setRequestHeader("Client-Id", CLIENTID)
-		WebRequest.SetRequestHeader("Api-Key", APIKEY)
-		WebRequest.Send(JSON.Dump(body))
-		httpStatus := WebRequest.Status
-		Arr := WebRequest.responseBody
-		pData := NumGet(ComObjValue(Arr) + 8 + A_PtrSize)
-		length := Arr.MaxIndex() + 1
-		response := StrGet(pData, length, "UTF-8")
-
-		Result := {"result": p ? JSON.Load(response) : response, "status": httpStatus}
-		Append := % Result["result"]
-		RegexMatch(Append, "U)sku"":(.*)`,", picture_url)
-		If picture_url1
-			Run, % "https://www.ozon.ru/context/detail/id/" picture_url1
-	}
-	catch
-	{
-		MsgBox, 262144, Ошибка, Не удалось открыть изображение товара.
-		LV_Modify(Current_Line, "-Check")
-	}
-}
-
-} ; /OZON API
 
 { ; WB API
 
 
-W_MOVE(orderId, supplyId) { ; ################################################### Перемещение в поставку
-	try
-	{
-		orderId += 0
-		APIURL := "https://suppliers-api.wildberries.ru/api/v3/supplies/" supplyId "/orders/" orderId
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("PATCH", APIURL)
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.SetRequestHeader("Authorization", APIKEY)
-		WebRequest.Send()
-		arr := WebRequest.responseBody
-		Return, true
-	}
-	catch
-	{
-		MsgBox, 262144, Ошибка, Не удалось переместить заказ.
-		return
-	}
+APIPATCH(orderId, supplyId) { ; ################################################### Перемещение в поставку
+	orderId += 0
+	APIURL := "https://suppliers-api.wildberries.ru/api/v3/supplies/" supplyId "/orders/" orderId
+	WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	WebRequest.Open("PATCH", APIURL)
+	WebRequest.SetRequestHeader("Content-Type", "application/json")
+	WebRequest.SetRequestHeader("Authorization", APIKEY)
+	WebRequest.Send()
+
+	arr := WebRequest.responseBody
+	pData := NumGet(ComObjValue(arr) + 8 + A_PtrSize)
+	length := arr.MaxIndex() + 1
+	text := StrGet(pData, length, "utf-8")
+	Return, text
 }
 
 
-W_PIC(OrderID) { ; ################################################################### Креатив
-	try
-	{
-		OrderID -= 1
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("GET", "https://suppliers-api.wildberries.ru/api/v3/orders?limit=1&next=" OrderID)
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.SetRequestHeader("Authorization", APIKEY)
-		WebRequest.Send()
-		arr := WebRequest.responseBody
-	}
-	catch
-	{
-		MsgBox, 262144, Ошибка, Не удалось открыть изображение товара.
-		LV_Modify(Current_Line, "-Check")
-		return
-	}
-	If arr
-	{
-		pData := NumGet(ComObjValue(arr) + 8 + A_PtrSize)
-		length := arr.MaxIndex() + 1
-		text := StrGet(pData, length, "utf-8")
-		RegexMatch(text, "U)""nmId"":(.*),", OrderPicture)
-		Run, % "https://www.wildberries.ru/catalog/" OrderPicture1 "/detail.aspx?targetUrl=GP"
-	}
+APIGET(OrderID) { ; ################################################################### Креатив
+	OrderID -= 1
+	WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	WebRequest.Open("GET", "https://suppliers-api.wildberries.ru/api/v3/orders?limit=1&next=" OrderID)
+	WebRequest.SetRequestHeader("Content-Type", "application/json")
+	WebRequest.SetRequestHeader("Authorization", APIKEY)
+	WebRequest.Send()
+
+	arr := WebRequest.responseBody
+pData := NumGet(ComObjValue(arr) + 8 + A_PtrSize)
+length := arr.MaxIndex() + 1
+text := StrGet(pData, length, "utf-8")
+RegexMatch(text, "U)""nmId"":(.*),", OrderPicture)
+Run, % "https://www.wildberries.ru/catalog/" OrderPicture1 "/detail.aspx?targetUrl=GP"
 }
 
 
-W_LAB(OrderID, p := False) ; ################# Этикетка
+APIPOST(OrderID, p := False) ; ################# Этикетка
 {
-	try
+	OrderID += 0
+	;FileDelete, temp.bmp
+    body := {"orders": [OrderID]} ; this is now an ahk object
+    WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+    WebRequest.Open("POST", "https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40")
+    WebRequest.SetRequestHeader("Content-Type", "application/json")
+    WebRequest.setRequestHeader("Accept", "application/json")
+    WebRequest.SetRequestHeader("Authorization", APIKEY)
+    WebRequest.Send(JSON.Dump(body))
+
+    httpStatus := WebRequest.Status
+    Arr := WebRequest.responseBody
+    pData := NumGet(ComObjValue(Arr) + 8 + A_PtrSize)
+    length := Arr.MaxIndex() + 1
+    response := StrGet(pData, length, "UTF-8")
+
+    Result := {"result": p ? JSON.Load(response) : response, "status": httpStatus}
+    Append := % Result["result"]
+    If RegexMatch(Append, "file"":""(.*)"",""orderId", WBimg)
+        Decode(WBimg1)
+If !FileExist("temp.bmp")
 	{
-		OrderID += 0
-		body := {"orders": [OrderID]} ; this is now an ahk object
-		WebRequest := ComObjCreate("WinHttp.WinHttpRequest.5.1")
-		WebRequest.Open("POST", "https://suppliers-api.wildberries.ru/api/v3/orders/stickers?type=png&width=58&height=40")
-		WebRequest.SetRequestHeader("Content-Type", "application/json")
-		WebRequest.setRequestHeader("Accept", "application/json")
-		WebRequest.SetRequestHeader("Authorization", APIKEY)
-		WebRequest.Send(JSON.Dump(body))
-		httpStatus := WebRequest.Status
-		arr := WebRequest.responseBody
-	}
-	catch
-	{
-		MsgBox, 262144, Ошибка, Не удалось открыть этикетку.
-		LV_Modify(Current_Line, "-Check")
+		MsgBox, Не удалось загрузить этикетку
 		return
 	}
-	If arr
-	{	
-		pData := NumGet(ComObjValue(Arr) + 8 + A_PtrSize)
-		length := Arr.MaxIndex() + 1
-		response := StrGet(pData, length, "UTF-8")
-		Result := {"result": p ? JSON.Load(response) : response, "status": httpStatus}
-		Append := % Result["result"]
-		If RegexMatch(Append, "U)partA"":""(.*)"",""partB"":""(.*)"",.*file"":""(.*)"",""orderId", WBimg)
-		{
-			LV_Modify(Current_Line,,,,, WBimg2 A_Space WBimg1)
-			Decode(WBimg3)
-		}
-		If FileExist("temp.bmp")
-			Run, temp.bmp
-		return true
-	}
+    Run, temp.bmp
 }
 
 Decode(Base64ImageData)
 {
-	FileDelete, temp.bmp
     nBytes := Base64Dec( Base64ImageData, Bin )
     File := FileOpen("temp.bmp", "w")
     File.RawWrite(Bin, nBytes)
@@ -1360,19 +773,8 @@ Local Rqd := 0, BLen := StrLen(B64)                 ; CRYPT_STRING_BASE64 := 0x1
 Return Rqd
 }
 
-} ; /WB API
-
-IniRead()
-{
-	If (A_MM>=9) and (A_DD>=3)
-	{
-		ExitApp
-	}
+	
 }
-
-} ; ################################################################################ /API
-
-
 
 { ; ######################################################################### КОПИРОВАНИЕ В ТАБЛИЦУ
 #IfWinActive
@@ -1380,28 +782,28 @@ IniRead()
 OnClipboardChange:
 If WinActive("ahk_exe chrome.exe") or WinActive("ahk_exe browser.exe")
 {
-	global MARKETPLACE_COPY :=
+	MARKETPLACE_COPY :=
 	If RegexMatch(Clipboard, "\d+-\d{4}-\d+", Result) and InStr(Clipboard, "шт.")
 	{
-		MARKETPLACE_COPY := "OZON"
+		global MARKETPLACE_COPY := "OZON"
 		CopyOzon()
 		Sorting(4)
 	}
 	If RegexMatch(Clipboard, "\d{9} / \d{9}", Result)
 	{
-		MARKETPLACE_COPY := "YANDEX"
+		global MARKETPLACE_COPY := "YANDEX"
 		CopyYandex()
 		Sorting(2)
 	}
 	If InStr(Clipboard, "Ожидает подтверждения передачи") and InStr(Clipboard, "ID:")
 	{
-		MARKETPLACE_COPY := "ALI"
+		global MARKETPLACE_COPY := "ALI"
 		CopyALI()
 		Sorting(2)
 	}
 	If InStr(Clipboard, "2023") and InStr(Clipboard, "Арт.")
 	{
-		MARKETPLACE_COPY := "WB"
+		global MARKETPLACE_COPY := "WB"
 		CopyWB()
 		Sorting(2)
 	}
@@ -1412,6 +814,7 @@ If WinActive("ahk_exe chrome.exe") or WinActive("ahk_exe browser.exe")
 		If (Department == "Сувенирка") ; Фильтруем сувенирку
 			FilterSuvenirka()
 	}
+		
 }
 return
 
@@ -1432,8 +835,6 @@ FilterPlenka()
 		and !InStr(A_LoopField, "декор")
 		and !InStr(A_LoopField, "подставка под горяч")
 		and !InStr(A_LoopField, "Flash карта с кейсом подарок")
-		and !InStr(A_LoopField, "из дерева")
-		and !InStr(A_LoopField, "деревянная в подарок")
 		or InStr(A_LoopField, "Band") and !InStr(A_LoopField, "Брел")
 			Resultstring := Resultstring A_LoopField "`n"
 	}
@@ -1483,7 +884,6 @@ Loop, parse, clipboard, `n, `r
 			and !InStr(TheOrderName, "зарядк")
 			and !InStr(TheOrderName, "стекло")
 			and !InStr(TheOrderName, "чехол")
-			and !InStr(TheOrderName, "кейс")
 			and !InStr(TheOrderName, "не пленка")
 		or (InStr(TheOrderName, "watch")
 		or InStr(TheOrderName, "час"))
